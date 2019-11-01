@@ -1,3 +1,6 @@
+X-RAY 509
+===
+
 ###Warnig
 
 DO NOT USE THIS PROJECT IN PRODUCTION 
@@ -6,9 +9,9 @@ TO CHANGES THAT ARE NOT BACKWARD COMPATIBLE
 
 ###Intro
 
-This is a quick & dirty work done in my short time that began primarily 
+This is a quick & dirty work done in my free time that began primarily 
 to learn and as a need for a tool to visualize the contents of an 
-X509 certificate in a simple and detailed way.
+X509 certificate in a simple, complete and detailed way.
 
 It is only a toy but after all t is a tool that has turned out to be very 
 useful in the day-to-day work and that's he main reason why I publish this code.
@@ -34,5 +37,14 @@ This is a small demonstration of the xray-cert command:
 ###Example
 
 ![Example](doc/term.svg)
+
+## Requirements
+Java 1.8
+
+## Compile, Test & Package
+    $ mvn package
+				
+## License
+MIT License
 
 
