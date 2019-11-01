@@ -24,11 +24,14 @@ Who knows, maybe one day it will even be a useful tool.
 
 ## Tools
 
-The following tools are currently provided:
+The following tools are currently provided but in progress:
 * [XRAY-Cert](doc/xray-cert.md)  View and query certificates
 * [XRAY-OCSP](doc/xray-ocsp.md) Check the online status of a certificate
+* [XRAY-OSQ](doc/xray-osq.md) Dump RFC 6960 OCSP Request
 * [XRAY-CRL](doc/xray-crl.md) View certificates revocation lists
 * [XRAY-TS](doc/xray-ts.md) Generation of time stamps
+* [XRAY-TSR](doc/xray-tsr.md) Dump RFC 3161 Timestamp Response
+* [XRAY-TSQ](doc/xray-tsq.md) Dump RFC 3161 Timestamp Query
 * [XRAY-TS-Check](doc/xray-ts-chk.md) Time stamp verification
 
 This is a small demonstration of the xray-cert command:
@@ -39,10 +42,10 @@ This is a small demonstration of the xray-cert command:
 ![Example](./doc/term.svg)
 
 ## Requirements
-Java 1.8
+Java >= 1.8
 
 ## Compile, Test & Package
-    $ mvn package
+    $ mvn clean package
 				
 ## License
 MIT License
