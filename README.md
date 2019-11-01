@@ -25,11 +25,11 @@ Who knows, maybe one day it will even be a useful tool.
 ## Tools
 
 The following tools are currently provided:
-* [XRAY-Cert] (doc / xray-cert.md)  View and query certificates
-* [XRAY-OCSP] (doc / xray-ocsp.md) Check the online status of a certificate
-* [XRAY-CRL] (doc / xray-crl.md) View certificates revocation lists
-* [XRAY-TS] (doc / xray-ts.md) Generation of time stamps
-* [XRAY-TS-Check] (doc / xray-ts-chk.md) Time stamp verification
+* [XRAY-Cert](doc/xray-cert.md)  View and query certificates
+* [XRAY-OCSP](doc/xray-ocsp.md) Check the online status of a certificate
+* [XRAY-CRL](doc/xray-crl.md) View certificates revocation lists
+* [XRAY-TS](doc/xray-ts.md) Generation of time stamps
+* [XRAY-TS-Check](doc/xray-ts-chk.md) Time stamp verification
 
 This is a small demonstration of the xray-cert command:
 
