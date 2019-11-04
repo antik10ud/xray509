@@ -50,14 +50,20 @@ This is a small demonstration of the xray-cert command so you can taste the tool
 Java >= 1.8
 
 ## Compile, Test & Package
+```
     $ mvn clean package
+```
 
 ## Install
+```
    $ chmod +x target/appassembler/bin/*
    $ export PATH=target/appassembler/bin:$PATH	
+```
 
 ## Usage
+```
    $ xray-cert --help
+```
    
   	
 ## License
