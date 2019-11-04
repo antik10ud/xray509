@@ -46,8 +46,13 @@ public class XrayTimestampReq {
     }
 
 
-    public static void main(String[] args) throws IOException {
-        Context context = new Context(() -> null);
+    public static void main(String[] args) {
+        Context context = null;
+        try {
+            context = new Context(() -> null);
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot load context");
+        }
         Args app = null;
         try {
             app = populateCommand(new Args(), args);

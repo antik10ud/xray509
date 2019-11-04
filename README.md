@@ -28,16 +28,21 @@ The following tools are currently provided but in progress:
 * [XRAY-Cert](doc/xray-cert.md)  View and query certificates
 * [XRAY-OCSP](doc/xray-ocsp.md) Check the online status of a certificate
 * [XRAY-OSQ](doc/xray-osq.md) Dump RFC 6960 OCSP Request
-* [XRAY-CRL](doc/xray-crl.md) View certificates revocation lists
+* [XRAY-CRL](doc/xray-crl.md) View certificate revocation lists
 * [XRAY-TS](doc/xray-ts.md) Generation of time stamps
 * [XRAY-TSR](doc/xray-tsr.md) Dump RFC 3161 Timestamp Response
 * [XRAY-TSQ](doc/xray-tsq.md) Dump RFC 3161 Timestamp Query
 * [XRAY-TS-Check](doc/xray-ts-chk.md) Time stamp verification
 
-This is a small demonstration of the xray-cert command:
+
+## How To
+
+[How To](doc/how-to.md) do weird things with xray
 
 
 ## Example
+
+This is a small demonstration of the xray-cert command so you can taste the tool:
 
 ![Example](./doc/term.svg)
 
@@ -46,7 +51,15 @@ Java >= 1.8
 
 ## Compile, Test & Package
     $ mvn clean package
-				
+
+## Install
+   $ chmod +x target/appassembler/bin/*
+   $ export PATH=target/appassembler/bin:$PATH	
+
+## Usage
+   $ xray-cert --help
+   
+  	
 ## License
 MIT License
 

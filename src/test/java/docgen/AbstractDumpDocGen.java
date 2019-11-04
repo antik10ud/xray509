@@ -34,7 +34,7 @@ public abstract class AbstractDumpDocGen {
 
             for (Method m : list) {
                 if (m.getName().startsWith("section")) {
-                 //   out("<a name=\"" + m.getName() + "\"/>");
+                    //   out("<a name=\"" + m.getName() + "\"/>");
                     m.invoke(this);
                 }
             }
@@ -42,8 +42,11 @@ public abstract class AbstractDumpDocGen {
         }
     }
 
-
     void outCmd(String[] args, Consumer<String[]> main) {
+        outCmd(commandName, args, main);
+    }
+
+    void outCmd(String commandName, String[] args, Consumer<String[]> main) {
 
         out("```");
         out("$ " + commandName + " " + String.join(" ", args)); //TODO: quote arg when required
