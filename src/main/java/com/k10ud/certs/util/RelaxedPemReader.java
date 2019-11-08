@@ -33,6 +33,7 @@ public class RelaxedPemReader extends BufferedReader {
         super(in);
     }
 
+    //TODO:multi
     public byte[] read(String type) throws IOException {
         String line;
         String beginMarker = (BEGIN + type + "-----").toUpperCase();
@@ -48,7 +49,7 @@ public class RelaxedPemReader extends BufferedReader {
                 String value = line.substring(index + 1).trim();
 
                 //headers.add(new PemHeader(hdr, value));
-
+                buf.setLength(0);
                 continue;
             }
 

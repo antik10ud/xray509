@@ -66,7 +66,7 @@ public class CliUtil {
                 //so, ok
             }
 
-            if (data == null)
+            if (data == null||data.length==0)
                 data = src;
 
             return data;

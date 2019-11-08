@@ -54,7 +54,7 @@ CertificateList  ::=  SEQUENCE  {
 
     public Item parse(byte[] crlBytes) {
         Item out = new Item();
-        if (crlBytes == null)
+        if (crlBytes == null||crlBytes.length==0)
             return out.prop("No Data");
 
         CertificateList certList = new CertificateList();

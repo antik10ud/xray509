@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+
+  <title>{{title}}</title>
+  {{{style}}}
+
+  <script src="remark.min.js"></script>
+  <script>
+    function create() {
+      return remark.create({
+        {{{source}}},
+        ratio: '16:9',
+        highlightLines: true,
+        countIncrementalSlides: false,
+        highlightStyle: 'github'
+      });
+    }
+  </script>
+
+  <style type="text/css">
+  @font-face{
+    font-family: 'Noto Serif';
+    src: url('NotoSerif-Regular.ttf');
+  }
+  @font-face{
+    font-family: 'Yanone Kaffeesatz';
+    src: url('YanoneKaffeesatz-Regular.ttf');
+  }
+  @font-face{
+    font-family: 'Ubuntu Mono';
+    src: url('UbuntuMono-Regular.ttf');
+  }
+
+  body { font-family: 'Droid Serif'; }
+  h1, h2, h3 {
+    font-family: 'Yanone Kaffeesatz';
+    font-weight: normal;
+  }
+  .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+</style>
+
+</head>
+<body onload="slideshow = create()">
+</body>
+</html>

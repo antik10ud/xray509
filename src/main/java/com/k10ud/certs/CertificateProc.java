@@ -33,7 +33,6 @@ import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import static com.k10ud.certs.util.ASN1Helper.bytesToHex;
 import static com.k10ud.certs.util.ASN1Helper.hash;
 import static com.k10ud.certs.util.ItemHelper.encoded;
 
@@ -51,7 +50,7 @@ public class CertificateProc {
             return out.prop("No Data");
         Certificate cert = new Certificate();
         try {
-            cert.decode(0,certificate, true);
+            cert.decode(0, certificate, true);
         } catch (IOException e) {
             out.prop("Unable to process data as Certificate", e);
             out.prop("Raw Value", ItemHelper.xprint(certificate));
@@ -67,11 +66,11 @@ public class CertificateProc {
             out.prop("Version", version(tbs.version));
             BigInteger serialNumber = tbs.serialNumber.getPositiveValue();
             TaggedString ts = new TaggedString(serialNumber);
-            ts.addTag("hex", "0x"+serialNumber.toString(16));
+            ts.addTag("hex", "0x" + serialNumber.toString(16));
             ts.addTag("bits", "" + (tbs.serialNumber.getRawValue().length * 8));
             out.prop("SerialNumber", ts);
 
-            out.prop("Signature", ItemHelper.algorithm( context,tbs.signature)
+            out.prop("Signature", ItemHelper.algorithm(context, tbs.signature)
                     .src(tbs.signature));
 
             out.prop("Issuer", ItemHelper.name(context, tbs.issuer)
@@ -86,7 +85,7 @@ public class CertificateProc {
 
             out.prop("Validity", validity(tbs.validity).src(tbs.validity));
             if (tbs.issuerUniqueID != null)
-                out.prop("IssuerUniqueID",  tbs.issuerUniqueID);
+                out.prop("IssuerUniqueID", tbs.issuerUniqueID);
             if (tbs.subjectUniqueID != null)
                 out.prop("SubjectUniqueID", tbs.subjectUniqueID);
             out.prop("SubjectPublicKeyInfo", subjectPublicKeyInfo(tbs.subjectPublicKeyInfo));
@@ -95,24 +94,25 @@ public class CertificateProc {
         } else {
             out.prop("tbsCertificate", "Not Found!");
         }
+        TaggedString fingerPrintsTag = new TaggedString("Fingerprints").addTag("synthetic");
         try {
             BerByteArrayOutputStream o = new BerByteArrayOutputStream(8192);
             cert.encode(o, true);
-            out.prop("Fingerprints", fingerprints(o.getArray()));
+            out.prop(fingerPrintsTag, fingerprints(o.getArray()));
         } catch (IOException e) {
-            out.prop("Fingerprints", "Unable to calculate");
+            out.prop(fingerPrintsTag, "Unable to calculate");
         }
         Item sec = new Item();
 
         sec.prop(new TaggedString("CVE-2008-0166")
                         .addTag("Openssl predictable random number generator"),
-                new TaggedString(DebianWeakKeysVulnerability.isAffected(CertificateHelper.publicKey(cert))).addTag("synthetic"));
+                DebianWeakKeysVulnerability.isAffected(CertificateHelper.publicKey(cert)));
 
         sec.prop(new TaggedString("CVE-2017-15361")
                         .addTag("ROCA: Vulnerable RSA generation"),
-                new TaggedString(ROCAVulnerability.isAffected(CertificateHelper.publicKey(cert))).addTag("synthetic"));
+                ROCAVulnerability.isAffected(CertificateHelper.publicKey(cert)));
 
-        out.prop("Security", sec);
+        out.prop(new TaggedString("Security").addTag("synthetic"), sec);
 
 
         Item tlinfo = context.trustedListInfo(cert.code);
@@ -148,10 +148,11 @@ public class CertificateProc {
 
     private Item fingerprints(byte[] cert) {
         Item out = new Item();
-        out.prop("MD5", new TaggedString(hash("MD5", cert)).addTag("synthetic"));
-        out.prop("SHA1", new TaggedString(hash("SHA1", cert)).addTag("synthetic"));
-        out.prop("SHA2-256", new TaggedString(hash("SHA-256", cert)).addTag("synthetic"));
-        out.prop("SHA3-256", new TaggedString(hash("SHA3-256", cert)).addTag("synthetic"));
+
+        out.prop("MD5     ", hash("MD5", cert));
+        out.prop("SHA1    ", hash("SHA1", cert));
+        out.prop("SHA2-256", hash("SHA-256", cert));
+        out.prop("SHA3-256", hash("SHA3-256", cert));
 
         return out;
     }
@@ -171,28 +172,28 @@ public class CertificateProc {
             switch (algOid) {
                 case "1.2.840.113549.1.1.1":
                     RSAPublicKey rsapk = new RSAPublicKey();
-                    rsapk.decode(info.subjectPublicKey.from,info.subjectPublicKey.value, true);
+                    rsapk.decode(info.subjectPublicKey.from, info.subjectPublicKey.value, true);
                     keySize = rsapk.modulus.getPositiveValue().bitLength();
                     out.prop("modulus", rsapk.modulus.getRawValue());
                     out.prop("publicExponent", rsapk.publicExponent.getRawValue());
                     out.prop("@encoded", info.subjectPublicKey.value);
                     break;
                 case "1.2.840.10045.2.1":
-                    ECParameters ecparams=new ECParameters();
-                    ecparams.decode(info.algorithm.parameters.from,info.algorithm.parameters.value, null);
+                    ECParameters ecparams = new ECParameters();
+                    ecparams.decode(info.algorithm.parameters.from, info.algorithm.parameters.value, null);
                     BerByteArrayOutputStream b = new BerByteArrayOutputStream(1000);
-                    ecparams.namedCurve.encode(b,false);
+                    ecparams.namedCurve.encode(b, false);
 
-                   // System.out.println(bytesToHex(b.getArray(),":"));
-                    out.prop("Named curve",  context.nameAndOid(ecparams.namedCurve));
+                    // System.out.println(bytesToHex(b.getArray(),":"));
+                    out.prop("Named curve", context.nameAndOid(ecparams.namedCurve));
                     //paramsOut.prop("modulus", rsapk.modulus.getRawValue());
                     //paramsOut.prop("publicExponent", rsapk.publicExponent.getRawValue());
                     //paramsOut.prop("@encoded", info.subjectPublicKey.value);
 
                     ECPoint ecpk = new ECPoint();
 
-                    ecpk.decode(info.subjectPublicKey.from,info.subjectPublicKey.value, false);
-                    out.prop("EC point",  ecpk.value);
+                    ecpk.decode(info.subjectPublicKey.from, info.subjectPublicKey.value, false);
+                    out.prop("EC point", ecpk.value);
                     //System.out.println("");
                     //keySize = ecpk .modulus.getPositiveValue().bitLength();
                     break;
@@ -204,10 +205,12 @@ public class CertificateProc {
         } catch (Exception ignored) {
             ignored.printStackTrace();
         }
-        out.prop("SHA1", new TaggedString(hash("SHA1", info.subjectPublicKey.value)).addTag("synthetic"));
-        out.prop("SHA2-256", new TaggedString(hash("SHA-256", info.subjectPublicKey.value)).addTag("synthetic"));
-        out.prop("SHA3-256", new TaggedString(hash("SHA3-256", info.subjectPublicKey.value)).addTag("synthetic"));
-
+        TaggedString fingerPrintsTag = new TaggedString("Fingerprints").addTag("synthetic");
+        try {
+            out.prop(fingerPrintsTag, fingerprints(info.encoded(true)));
+        } catch (IOException e) {
+            out.prop("fingerPrintsTag", "Unable to calculate");
+        }
         return out;
     }
 

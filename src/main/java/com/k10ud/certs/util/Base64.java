@@ -816,6 +816,9 @@ public class Base64
         for( i = off; i < off+len; i++ )
         {
             sbiCrop = (byte)(source[i] & 0x7f); // Only the low seven bits
+            if (sbiCrop<0||sbiCrop>=DECODABET.length) {
+                return null;
+            }
             sbiDecode = DECODABET[ sbiCrop ];
 
             if( sbiDecode >= WHITE_SPACE_ENC ) // White space, Equals sign or better

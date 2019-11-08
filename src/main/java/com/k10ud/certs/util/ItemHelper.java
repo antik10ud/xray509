@@ -238,7 +238,7 @@ public class ItemHelper {
             if (sb.length() == 0)
                 sb.append(" 0");
 
-            out.prop("Duration", new TaggedString(sb.substring(1)).addTag("synthetic"));
+            out.prop(new TaggedString("Duration").addTag("synthetic"), sb.substring(1));
         }
         out.prop("NotBefore", dd0 != null ? dd0 : notBefore);
         TaggedString dd1t=new TaggedString((dd1 != null ? dd1 : notAfter));

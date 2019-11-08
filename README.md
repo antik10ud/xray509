@@ -1,7 +1,7 @@
 X-RAY 509
 ===
 
-## Warnig
+## Warning
 
 DO NOT USE THIS PROJECT IN PRODUCTION 
 IT IS AN UNFINISHED WORK AND SUBJECT 
@@ -53,18 +53,29 @@ Java >= 1.8
 ```
     $ mvn clean package
 ```
-
+  
 ## Install
 ```
    $ chmod +x target/appassembler/bin/*
    $ export PATH=target/appassembler/bin:$PATH	
 ```
 
+## Download
+You can download already compiled tools (java 1.8)
+
+* [xray-tools.zip](dist/xray-tools.zip)
+* [xray-tools.tar.gz](dist/xray-tools.tar.gz)
+  
+
+  
 ## Usage
 ```
    $ xray-cert --help
 ```
-   
+
+## More Info
+
+* [Slides](doc/20191108-slides-imaginecode/pdf/presentation.pdf) de la charla de presentación de las herramientas en el [ImagineCode 2019](http://imaginecode.org/) 
   	
 ## License
 MIT License

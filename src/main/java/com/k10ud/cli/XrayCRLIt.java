@@ -69,7 +69,7 @@ public class XrayCRLIt {
         Item run = new Item();
         Context context = app.context != null ? app.context : new Context(() -> null);
         {
-            if (!crlProc(run, context, app.inputFile, false)) {
+            if (app.inputFile.startsWith("tls:") ||!crlProc(run, context, app.inputFile, false)) {
                 byte[] data = CliUtil.readCertificate(app.inputFile);
 
                 if (data == null) {
@@ -102,7 +102,7 @@ public class XrayCRLIt {
         if (items.size() > 1) { //!! return error from processors
             KV kv = items.get(0);
             if ("Unable to process data as CertificateList".equals(kv.getKey())) {
-                // dumper.prop("error", "Unable to process data as CRL from " + inputFile);
+                 dumper.prop("error", "Unable to process data as CRL from " + inputFile);
                 return false;
             }
         }

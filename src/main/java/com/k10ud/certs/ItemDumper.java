@@ -48,7 +48,7 @@ public class ItemDumper implements IItemDumper {
         this(Ansi.AUTO, true, false);
     }
 
-    public String toString(byte[] src,Item item) {
+    public String toString(byte[] src, Item item) {
         StringBuilder sb = new StringBuilder();
         StringBuilder prefix = new StringBuilder();
         toString(prefix, sb, item);
@@ -60,18 +60,23 @@ public class ItemDumper implements IItemDumper {
         List<KV> props = item.getProps();
 
         int n = props.size();
+        boolean isIndex = sb.length() > 0 && "]".equalsIgnoreCase(sb.substring(sb.length() - 1, sb.length()));
         if (n > 1 || !compactLines) {
-            if (sb.length() > 0)
+            if (sb.length() > 0 && !isIndex)
                 sb.append("\n");
-        } else if (n == 1)
+        } else if (n == 1) {
             if (sb.length() > 0)
                 sb.append(" -> ");
-
+        }
         for (KV i : props) {
             if (i.key.toString().startsWith("@") && !showEncodings)
                 continue;
-            if (n > 1 || !compactLines)
-                sb.append(prefix);
+            if (n > 1 || !compactLines) {
+                if (isIndex)
+                    sb.append(" ");
+                else
+                    sb.append(prefix);
+            }
             dump(sb, i.key);
             if (i.value != null) {
                 if (i.value instanceof Item) {
@@ -111,9 +116,9 @@ public class ItemDumper implements IItemDumper {
                 sb.append(String.format("%s (0x%x, %dbits)", bolds(bold, String.valueOf(i)), i, n.bitLength()));
             } else*/
 
-           if (i instanceof XPrint) {
-               sb.append(ItemHelper.cmds_xprint(((XPrint)i).getBytes(),detectPrefix(sb)));
-           } else if (i instanceof Number) {
+            if (i instanceof XPrint) {
+                sb.append(ItemHelper.cmds_xprint(((XPrint) i).getBytes(), detectPrefix(sb)));
+            } else if (i instanceof Number) {
                 Number n = (Number) i;
 
                 sb.append(String.format("%s (0x%x)", bolds(bold, String.valueOf(n)), i));
@@ -122,7 +127,7 @@ public class ItemDumper implements IItemDumper {
                 sb.append(boldex(detectPrefix(sb), bold, (byte[]) i));
             } else if (i instanceof TaggedString) {
                 TaggedString ts = (TaggedString) i;
-             //  sb.append( ts.getId().getClass().getName());
+                //  sb.append( ts.getId().getClass().getName());
                 dump(sb, ts.getId(), true);
                 if (ts.tagCount() > 0) {
                     sb.append(" (");
@@ -209,7 +214,7 @@ public class ItemDumper implements IItemDumper {
         if (i == null)
             return "";
         if (!bold)
-            return block(detectPrefix,  16 * 3, ASN1Helper.bytesToHex((byte[]) i, ":"));
+            return block(detectPrefix, 16 * 3, ASN1Helper.bytesToHex((byte[]) i, ":"));
         return block(detectPrefix, 4 * 16 * 3, "@|bold " + ASN1Helper.bytesToHex((byte[]) i, "|@:@|bold ") + "|@");
     }
 

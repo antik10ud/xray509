@@ -78,7 +78,7 @@ T
     @Option(names = {"--text-format-compact-lines"}, paramLabel = "<text-format-compact-lines>", description = {
             "Specify output must compact single elements in one line"
     })
-    public boolean textFormatCompactLines = true;
+    public boolean textFormatCompactLines = false;
 
 
     @Option(names = {"--show-encodings"}, paramLabel = "<show-encodings>", description = {

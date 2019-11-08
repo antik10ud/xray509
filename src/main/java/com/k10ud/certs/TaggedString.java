@@ -60,12 +60,12 @@ public class TaggedString {
             return value;
         }
     }
-/*
-    public TaggedString(Object main) {
-        this(main == null ? null : main.toString());
-    }*/
 
     public TaggedString(Object main) {
+        this(main == null ? null : main.toString());
+    }
+
+    public TaggedString(String main) {
         this.id = main;
         attrs = new ArrayList<>();
     }
