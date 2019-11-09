@@ -140,6 +140,15 @@ Source: [Wikipedia](https://es.wikipedia.org/wiki/Infraestructura_de_clave_p%C3%
 --
 
 Por los procedimientos operacionales o Políticas de seguridad aplicados (DPC)
+--
+
+- Certificate chains
+- Trusted Root Certificates
+- Reglamento EIDAS (electronic IDentification, Authentication and trust Services) normativa para la identificación electrónica y los servicios de confianza en europa
+EUTL (European Union Trusted Lists) lista pública con los proveedores de servicios de confianza (TSP)conformes con EIDAS
+
+https://helpx.adobe.com/es/document-cloud/kb/european-union-trust-lists.html
+https://es.wikipedia.org/wiki/EIDAS
 
 ---
 ## X509
@@ -326,6 +335,17 @@ QCStatementProc
 SubjectAltNameProc
 SubjectDirAttrProc
 SubjectKeyIdentifierProc
+
+---
+# xray-cert - Alertas de seguridad
+
+xray-cert muestra si el certificado está afectado por algunas de las vulnerabilidades más conocidas
+
+## CVE-2008-0166 (Openssl predictable random number generator)
+https://www.schneier.com/blog/archives/2008/05/random_number_b.html
+
+## CVE-2017-15361 (ROCA: Vulnerable RSA generation)
+https://en.wikipedia.org/wiki/ROCA_vulnerability
 
 ---
 # xray-cert como conversor
