@@ -25,6 +25,7 @@ package com.k10ud.certs.extensions;
 import com.k10ud.asn1.x509_certificate.Extension;
 import com.k10ud.certs.Context;
 import com.k10ud.certs.Item;
+import com.k10ud.certs.TaggedString;
 import org.openmuc.jasn1.ber.types.BerOctetString;
 
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class SubjectKeyIdentifierProc extends BaseExtensionProc {
 
             BerOctetString bos=new BerOctetString();
             bos.decode(ext.extnValue.from,ext.extnValue.value,true);
-            out.prop("Value",  bos.getValue());
+            out.prop(new TaggedString("Identifier").src(bos),  bos.getValue());
 
         }
         return out;

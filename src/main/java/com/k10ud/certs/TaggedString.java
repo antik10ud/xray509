@@ -21,17 +21,84 @@
 
 package com.k10ud.certs;
 
+import org.openmuc.jasn1.ber.SourcePostitionable;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class TaggedString {
+public final class TaggedString {
 
-
-    private Object  id;
+    private String id;
     private List<Attr> attrs;
 
+    public TaggedString addIndexTag(Integer index) {
+        if (index != null) {
+            addTag("@index", String.valueOf(index));
+        }
+        return this;
+    }
 
-    public static class Attr {
+    public TaggedString src(SourcePostitionable src) {
+        if (src != null) {
+            addTag("@src_from", String.valueOf(src.getFrom()));
+            addTag("@src_from_implicit", String.valueOf(src.getFromImplicit()));
+            addTag("@src_to", String.valueOf(src.getTo()));
+        }
+        return this;
+    }
+
+    public static final class Pos implements SourcePostitionable  {
+
+        private final long from;
+        private final long to;
+        private final long fromImplicit;
+
+        public Pos(long from, long fromImplicit,long to) {
+            this.from = from;
+            this.to = to;
+            this.fromImplicit = fromImplicit;
+        }
+
+        @Override
+        public long getFrom() {
+            return from;
+        }
+
+        @Override
+        public long getTo() {
+            return to;
+        }
+
+
+        @Override
+        public long getFromImplicit() {
+            return fromImplicit;
+        }
+    }
+
+    public SourcePostitionable getSrc() {
+        Long from = null, to = null, fromImplicit=null;
+        for (Attr a : attrs) {
+            switch (a.attr) {
+                case "@src_from":
+                    from = Long.parseLong(a.value);
+                     break;
+                case "@src_from_implicit":
+                    fromImplicit= Long.parseLong(a.value);
+                    break;
+                case "@src_to":
+                    to = Long.parseLong(a.value);
+                    break;
+            }
+        }
+        if (from == null || to == null||fromImplicit==null)
+            return null;
+        return new Pos(from, fromImplicit, to);
+
+    }
+
+
+    public final static class Attr {
         private final String attr;
         private final String value;
 
@@ -47,9 +114,7 @@ public class TaggedString {
 
         @Override
         public String toString() {
-            return
-                    attr +
-                            "=" + value;
+            return attr + "=" + value;
         }
 
         public String getAttr() {
@@ -61,10 +126,6 @@ public class TaggedString {
         }
     }
 
-    public TaggedString(Object main) {
-        this(main == null ? null : main.toString());
-    }
-
     public TaggedString(String main) {
         this.id = main;
         attrs = new ArrayList<>();
@@ -74,7 +135,7 @@ public class TaggedString {
         return id;
     }
 
-    public TaggedString setId(Object id) {
+    public TaggedString setId(String id) {
         this.id = id;
         return this;
     }

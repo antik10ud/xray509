@@ -21,8 +21,10 @@
 
 package com.k10ud.certs;
 
+import java.util.Iterator;
+
 public final class KV {
-        final Object key;
+    final Object key;
 
     public Object getKey() {
         return key;
@@ -34,12 +36,32 @@ public final class KV {
 
     final Object value;
 
-        public KV(Object key, Object value) {
-            this.key = key;
-            this.value = value;
-        }
+    public KV(Object key, Object value) {
+        this.key = key;
+        this.value = value;
+    }
 
     public KV copyAs(String newKey) {
-            return new KV(newKey,value);
+        if (key instanceof TaggedString) {
+            TaggedString ts = new TaggedString(newKey);
+            Iterator<TaggedString.Attr> it = ((TaggedString) key).tags().iterator();
+            while (it.hasNext()) {
+                TaggedString.Attr x = it.next();
+                ts.addTag(x.getAttr(), x.getValue());
+            }
+            return new KV(ts, value);
+        }
+        return new KV(newKey, value);
+    }
+
+    public String getMainKey() {
+        if (key instanceof String) {
+            return (String) key;
+        }
+        if (key instanceof TaggedString) {
+            return (String) ((TaggedString) key).getId();
+        }
+        return String.valueOf(key);
+
     }
 }

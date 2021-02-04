@@ -41,12 +41,12 @@ public class CabfOrganizationIdentifierProc extends BaseExtensionProc {
         if (ext.extnValue != null) {
             CABFOrganizationIdentifier oi =new CABFOrganizationIdentifier();
             oi.decode(ext.extnValue.from,ext.extnValue.value,true);
-            out.prop("SchemeIdentifier",  new TaggedString( oi.registrationSchemeIdentifier).addTag("type","printableString"));
-            out.prop("Country", new TaggedString(  oi.registrationCountry).addTag("type","printableString"));
+            out.prop("SchemeIdentifier",  new TaggedString( oi.registrationSchemeIdentifier.toString()).addTag("type","printableString"));
+            out.prop("Country", new TaggedString(  oi.registrationCountry.toString()).addTag("type","printableString"));
             if (oi.registrationStateOrProvince!=null) {
-                out.prop("StateOrProvince", new TaggedString( oi.registrationStateOrProvince).addTag("type","printableString"));
+                out.prop("StateOrProvince", new TaggedString( oi.registrationStateOrProvince.toString()).addTag("type","printableString"));
             }
-            out.prop("Reference", new TaggedString(  oi.registrationReference).addTag("type","utf8String)"));
+            out.prop("Reference", new TaggedString(  oi.registrationReference.toString()).addTag("type","utf8String)"));
 
         }
         return out;

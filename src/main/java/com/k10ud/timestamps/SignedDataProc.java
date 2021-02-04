@@ -148,8 +148,8 @@ public class SignedDataProc {
         ZonedDateTime uld = genTime.plusNanos(nanoprec);
         ZonedDateTime lld = genTime.minusNanos(nanoprec);
 
-        TaggedString ult = new TaggedString(uld).addTag("synthetic");
-        TaggedString llt = new TaggedString(lld).addTag("synthetic");
+        TaggedString ult = new TaggedString(String.valueOf(uld)).addTag("synthetic");
+        TaggedString llt = new TaggedString(String.valueOf(lld)).addTag("synthetic");
 
         out.prop("Lower limit", llt);
         out.prop("Upper limit", ult);
@@ -195,8 +195,9 @@ public class SignedDataProc {
         List<CertificateChoices> seqOf = certificates.seqOf;
         for (int i = 0; i < seqOf.size(); i++) {
             CertificateChoices cc = seqOf.get(i);
-            Item xx = new CertificateProc(context).parse(cc.certificate).prop("@encoded",encoded(cc.certificate));
-            out.prop(i, xx);
+            Item xx = new CertificateProc(context).parse(cc.certificate);
+                    //.prop("@encoded",encoded(cc.certificate));
+            out.prop(ItemHelper.index(i), xx);
         }
         return out;
     }

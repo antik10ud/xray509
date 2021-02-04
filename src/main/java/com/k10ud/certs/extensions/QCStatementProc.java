@@ -43,25 +43,25 @@ public class QCStatementProc extends BaseExtensionProc {
         map = new HashMap<>();
 
         defaultProc = (ctx, qcs) -> {
-            if (qcs == null)
-                return null;
-            Item out = new Item();
-            if (qcs.statementInfo != null)
+            if (qcs != null && qcs.statementInfo != null) {
+                Item out = new Item();
                 out.prop("statementInfo", qcs.statementInfo);
-            return new Item(ctx.nameAndOid(qcs.statementId), out);
+                return out;
+            }
+            return null;
         };
 
         map.put("0.4.0.1862.1.3", (ctx, qcs) -> {
             Item out = new Item();
             QcEuRetentionPeriod q = new QcEuRetentionPeriod();
             try {
-                q.decode(qcs.statementInfo.from,qcs.statementInfo.value, true);
+                q.decode(qcs.statementInfo.from, qcs.statementInfo.value, true);
                 out.prop("Years", q.getInt());
             } catch (IOException e) {
-              //  e.printStackTrace();
+                //  e.printStackTrace();
                 return defaultProc.apply(ctx, qcs);
             }
-            return new Item(ctx.nameAndOid(qcs.statementId), out);
+            return out;
         });
 
 
@@ -69,16 +69,16 @@ public class QCStatementProc extends BaseExtensionProc {
             Item out = new Item();
             QcEuPDS q = new QcEuPDS();
             try {
-                q.decode(qcs.statementInfo.from,qcs.statementInfo.value, true);
+                q.decode(qcs.statementInfo.from, qcs.statementInfo.value, true);
                 List<PdsLocation> seqOf = q.seqOf;
                 for (int i = 0; i < seqOf.size(); i++) {
                     PdsLocation location = seqOf.get(i);
-                    out.prop("Location[" + i + "]", pds(location));
+                    out.prop(ItemHelper.index(i, "Location"), pds(location));
                 }
             } catch (IOException e) {
                 return defaultProc.apply(ctx, qcs);
             }
-            return new Item(ctx.nameAndOid(qcs.statementId), out);
+            return out;
         });
 
 
@@ -86,77 +86,82 @@ public class QCStatementProc extends BaseExtensionProc {
             Item out = new Item();
             QcType q = new QcType();
             try {
-                q.decode(qcs.statementInfo.from,qcs.statementInfo.value, true);
+                q.decode(qcs.statementInfo.from, qcs.statementInfo.value, true);
                 List<BerObjectIdentifier> seqOf = q.seqOf;
                 for (int i = 0; i < seqOf.size(); i++) {
-                  //  PdsLocation location = seqOf.get(i);
+                    //  PdsLocation location = seqOf.get(i);
                     out.prop(ctx.nameAndOid(seqOf.get(i)));
 
                 }
             } catch (IOException e) {
-               // e.printStackTrace();
+                // e.printStackTrace();
                 return defaultProc.apply(ctx, qcs);
             }
-            return new Item(ctx.nameAndOid(qcs.statementId), out);
+            return out;
         });
-
 
 
         map.put("0.4.0.1862.1.2", (ctx, qcs) -> {
             Item out = new Item();
             QcEuLimitValue q = new QcEuLimitValue();
             try {
-                q.decode(qcs.statementInfo.from,qcs.statementInfo.value, true);
+                q.decode(qcs.statementInfo.from, qcs.statementInfo.value, true);
                 // value = amount * 10^exponent
                 double value = q.amount.getLong() * Math.pow(10, q.exponent.getLong());
-                TaggedString ts = new TaggedString(value).addTag("synthetic");
+                TaggedString ts = new TaggedString(String.valueOf(value)).addTag("synthetic");
                 out.prop("value", ts);
                 out.prop("amount", q.amount.getValue());
                 out.prop("exponent", q.exponent.getValue());
                 out.prop("currency", q.currency);
             } catch (IOException e) {
-              //  e.printStackTrace();
+                //  e.printStackTrace();
                 return defaultProc.apply(ctx, qcs);
             }
-            return new Item(ctx.nameAndOid(qcs.statementId), out);
+            return out;
         });
         map.put("1.3.6.1.5.5.7.11.2", (ctx, qcs) -> {
             Item out = new Item();
             SemanticsInformation q = new SemanticsInformation();
             try {
                 if (qcs.statementInfo != null) {
-                    q.decode(qcs.statementInfo.from,qcs.statementInfo.value, true);
+                    q.decode(qcs.statementInfo.from, qcs.statementInfo.value, true);
                     out.prop("keyIdentifier", ctx.nameAndOid(q.keyIdentifier));
                 }
-                if (q.nameRegistrationAuthorities != null && q.nameRegistrationAuthorities.seqOf.size() > 0)
-                    for (GeneralName i : q.nameRegistrationAuthorities.seqOf)
-                        out.prop(ItemHelper.generalName(ctx, i));
+                if (q.nameRegistrationAuthorities != null && q.nameRegistrationAuthorities.seqOf.size() > 0) {
+                    List<GeneralName> seqOf = q.nameRegistrationAuthorities.seqOf;
+                    for (int i1 = 0; i1 < seqOf.size(); i1++) {
+                        GeneralName i = seqOf.get(i1);
+                        out.prop(ItemHelper.index(i1), ItemHelper.generalName(ctx, i));
+                    }
+                }
             } catch (IOException e) {
-               // e.printStackTrace();
+                // e.printStackTrace();
                 return defaultProc.apply(ctx, qcs);
             }
-            return new Item(ctx.nameAndOid(qcs.statementId), out);
+            return out;
         });
 
     }
 
     private Item pds(PdsLocation location) {
         Item out = new Item();
-        out.prop("lang", new TaggedString( location.language).addTag("type","PrintableString"));
-        out.prop("url", new TaggedString( location.url).addTag("type","IA5String"));
+        out.prop("lang", new TaggedString(String.valueOf(location.language)).addTag("type", "PrintableString"));
+        out.prop("url", new TaggedString(String.valueOf(location.url)).addTag("type", "IA5String"));
         return out;
     }
 
     @Override
     public Item processContent(Context ctx, Extension e) throws IOException {
         QCStatements list = new QCStatements();
-        list.decode(e.extnValue.from,e.extnValue.value, true);
+        list.decode(e.extnValue.from, e.extnValue.value, true);
         Item out = new Item();
 
         if (list.seqOf != null) {
-            int k=0;
-            for (QCStatement i : list.seqOf) {
-                out.prop(ItemHelper.index((k++)), qcProc(i.statementId).apply(ctx, i));
+            List<QCStatement> seqOf = list.seqOf;
+            for (int i1 = 0; i1 < seqOf.size(); i1++) {
+                QCStatement i = seqOf.get(i1);
+                out.prop(ctx.nameAndOid(i.statementId).addIndexTag(i1), qcProc(i.statementId).apply(ctx, i));
+                //       out.prop(ItemHelper.index((k++)), qcProc(i.statementId).apply(ctx, i));
             }
         }
         return out;

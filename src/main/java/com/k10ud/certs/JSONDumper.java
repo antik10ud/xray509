@@ -49,15 +49,8 @@ public class JSONDumper implements IItemDumper {
             sb.append(prefix);
             if (comma)
                 sb.append(",\n");
-            if (i.key instanceof TaggedString) {
-                sb.append("\"key\":");
-                dump(sb, i.key);
-                sb.append(",\"value\"");
+            dump(sb, i.key);
 
-            } else {
-                dump(sb, i.key);
-
-            }
             sb.append(": ");
             if (i.value != null) {
                 if (i.value instanceof SourcePostitionable) {

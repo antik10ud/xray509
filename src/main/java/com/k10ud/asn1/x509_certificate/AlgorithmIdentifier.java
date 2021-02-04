@@ -25,147 +25,141 @@
 
 package com.k10ud.asn1.x509_certificate;
 
-import java.io.IOException;
-import java.io.EOFException;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.math.BigInteger;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.io.UnsupportedEncodingException;
 import org.openmuc.jasn1.ber.*;
-import org.openmuc.jasn1.ber.types.*;
-import org.openmuc.jasn1.ber.types.string.*;
+import org.openmuc.jasn1.ber.types.BerAny;
+import org.openmuc.jasn1.ber.types.BerObjectIdentifier;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 
-public class AlgorithmIdentifier  implements Encodedable,Decodeable,SourcePostitionable /*3*/{
+public class AlgorithmIdentifier implements Encodedable, Decodeable, SourcePostitionable /*3*/ {
 
-public static final BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS, BerIdentifier.CONSTRUCTED, 16);
-protected BerIdentifier id;
+    public static final BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS, BerIdentifier.CONSTRUCTED, 16);
+    protected BerIdentifier id;
 
-public byte[] code = null; public long from,to;
-public BerObjectIdentifier algorithm = null;
+    public byte[] code = null;
+    public long from, to;
+    public BerObjectIdentifier algorithm = null;
 
-public BerAny parameters = null;
+    public BerAny parameters = null;
 
-public AlgorithmIdentifier() {
-id = identifier;
-}
+    public AlgorithmIdentifier() {
+        id = identifier;
+    }
 
-public AlgorithmIdentifier(byte[] code) {
-id = identifier;
-this.code = code;
-}
+    public AlgorithmIdentifier(byte[] code) {
+        id = identifier;
+        this.code = code;
+    }
 
-public AlgorithmIdentifier(BerObjectIdentifier algorithm, BerAny parameters) {
-id = identifier;
-this.algorithm = algorithm;
-this.parameters = parameters;
-}
+    public AlgorithmIdentifier(BerObjectIdentifier algorithm, BerAny parameters) {
+        id = identifier;
+        this.algorithm = algorithm;
+        this.parameters = parameters;
+    }
 
-public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
+    public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
 
-int codeLength;
+        int codeLength;
 
-if (code != null) {
-codeLength = code.length;
-for (int i = code.length - 1; i >= 0; i--) {
-os.write(code[i]);
-}
-}
-else {
-codeLength = 0;
-if (parameters != null) {
-codeLength += parameters.encode(os);
-}
+        if (code != null) {
+            codeLength = code.length;
+            for (int i = code.length - 1; i >= 0; i--) {
+                os.write(code[i]);
+            }
+        } else {
+            codeLength = 0;
+            if (parameters != null) {
+                codeLength += parameters.encode(os);
+            }
 
-codeLength += algorithm.encode(os, true);
+            codeLength += algorithm.encode(os, true);
 
-codeLength += BerLength.encodeLength(os, codeLength);
-}
+            codeLength += BerLength.encodeLength(os, codeLength);
+        }
 
-if (explicit) {
-codeLength += id.encode(os);
-}
+        if (explicit) {
+            codeLength += id.encode(os);
+        }
 
-return codeLength;
-}
+        return codeLength;
+    }
 
-public int decode(long sourceOffset,byte[] bytes, boolean explicit) throws IOException {
-return decode(new CountingInputStream(sourceOffset,new ByteArrayInputStream(bytes)), explicit);
+    public int decode(long sourceOffset, byte[] bytes, boolean explicit) throws IOException {
+        return decode(new CountingInputStream(sourceOffset, new ByteArrayInputStream(bytes)), explicit);
 
-}
-public int decode(CountingInputStream is, boolean explicit) throws IOException {
-int codeLength = 0;
-this.from=is.getPosition();
-int subCodeLength = 0;
-BerIdentifier berIdentifier = new BerIdentifier();
+    }
 
-if (explicit) {
-codeLength += id.decodeAndCheck(is);
-}
+    public int decode(CountingInputStream is, boolean explicit) throws IOException {
+        int codeLength = 0;
+        this.from = is.getPosition();
+        int subCodeLength = 0;
+        BerIdentifier berIdentifier = new BerIdentifier();
 
-BerLength length = new BerLength();
-codeLength += length.decode(is);
+        if (explicit) {
+            codeLength += id.decodeAndCheck(is);
+        }
 
-int totalLength = length.val;
-codeLength += totalLength;
+        BerLength length = new BerLength();
+        codeLength += length.decode(is);
 
-subCodeLength += berIdentifier.decode(is);
-if (berIdentifier.equals(BerObjectIdentifier.identifier)) {
-algorithm = new BerObjectIdentifier();
-subCodeLength += algorithm.decode(is, false);
-if (subCodeLength == totalLength) {
-this.to=is.getPosition();
-return codeLength;
-}
-}
-else {
-throw new IOException("Identifier does not match the mandatory sequence element identifer.");
-}
+        int totalLength = length.val;
+        codeLength += totalLength;
 
-parameters = new BerAny();
-subCodeLength += parameters.decode(is, totalLength - subCodeLength);
-this.to=is.getPosition();
-return codeLength;
+        subCodeLength += berIdentifier.decode(is);
+        if (berIdentifier.equals(BerObjectIdentifier.identifier)) {
+            algorithm = new BerObjectIdentifier();
+            subCodeLength += algorithm.decode(is, false);
+            if (subCodeLength == totalLength) {
+                this.to = is.getPosition();
+                return codeLength;
+            }
+        } else {
+            throw new IOException("Identifier does not match the mandatory sequence element identifer.");
+        }
 
-}
+        parameters = new BerAny();
+        subCodeLength += parameters.decode(is, totalLength - subCodeLength);
+        this.to = is.getPosition();
+        return codeLength;
 
-public void encodeAndSave(int encodingSizeGuess) throws IOException {
-BerByteArrayOutputStream os = new BerByteArrayOutputStream(encodingSizeGuess);
-encode(os, false);
-code = os.getArray();
-}
+    }
 
-public String toString() {
-StringBuilder sb = new StringBuilder("SEQUENCE{");
-sb.append("algorithm: ").append(algorithm);
+    public void encodeAndSave(int encodingSizeGuess) throws IOException {
+        BerByteArrayOutputStream os = new BerByteArrayOutputStream(encodingSizeGuess);
+        encode(os, false);
+        code = os.getArray();
+    }
 
-if (parameters != null) {
-sb.append(", ");
-sb.append("parameters: ").append(parameters);
-}
+    public String toString() {
+        StringBuilder sb = new StringBuilder("SEQUENCE{");
+        sb.append("algorithm: ").append(algorithm);
 
-sb.append("}");
-return sb.toString();
-}
+        if (parameters != null) {
+            sb.append(", ");
+            sb.append("parameters: ").append(parameters);
+        }
 
-@Override
+        sb.append("}");
+        return sb.toString();
+    }
 
- public long getFrom() {
+    @Override
 
-     return from;
+    public long getFrom() {
 
-}
+        return from;
 
-@Override
+    }
 
-public long getTo() {
+    @Override
 
-    return to;
+    public long getTo() {
 
-}
+        return to;
+
+    }
 
 }
 

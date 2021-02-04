@@ -20,24 +20,20 @@
  */
 package org.openmuc.jasn1.ber.types;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
-import org.openmuc.jasn1.ber.BerIdentifier;
-import org.openmuc.jasn1.ber.BerLength;
-import org.openmuc.jasn1.ber.CountingInputStream;
+import org.openmuc.jasn1.ber.*;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.IOException;
 
-public class BerBitString {
+public class BerBitString implements SourcePostitionable {
 
     public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
             BerIdentifier.PRIMITIVE, BerIdentifier.BIT_STRING_TAG);
     protected BerIdentifier id;
 
-    public byte[] code = null; public long from,to;
+    public byte[] code = null;
+    public long from, to, fromImplicit;
 
     public byte[] value;
     public int numBits;
@@ -71,8 +67,7 @@ public class BerBitString {
             for (int i = code.length - 1; i >= 0; i--) {
                 os.write(code[i]);
             }
-        }
-        else {
+        } else {
 
             for (int i = (value.length - 1); i >= 0; i--) {
                 os.write(value[i]);
@@ -93,14 +88,14 @@ public class BerBitString {
     }
 
 
-public int decode(long offset,byte[] bytes, boolean explicit) throws IOException {
-		return decode(new CountingInputStream(offset,new ByteArrayInputStream(bytes)), explicit);
-	}
+    public int decode(long offset, byte[] bytes, boolean explicit) throws IOException {
+        return decode(new CountingInputStream(offset, new ByteArrayInputStream(bytes)), explicit);
+    }
 
     public int decode(CountingInputStream is, boolean explicit) throws IOException {
         // could be encoded in primitiv and constructed mode
         // only primitiv mode is implemented
-from=is.getPosition();
+        from = is.getPosition();
         int codeLength = 0;
 
         if (explicit) {
@@ -109,7 +104,6 @@ from=is.getPosition();
 
         BerLength length = new BerLength();
         codeLength += length.decode(is);
-
         value = new byte[length.val - 1];
 
         int nextByte = is.read();
@@ -118,6 +112,7 @@ from=is.getPosition();
         }
 
         numBits = (value.length * 8) - nextByte;
+        fromImplicit = is.getPosition();
 
         if (value.length > 0) {
             Util.readFully(is, value);
@@ -125,7 +120,7 @@ from=is.getPosition();
 
         codeLength += value.length + 1;
 
-        to=is.getPosition();
+        to = is.getPosition();
         return codeLength;
 
     }
@@ -136,11 +131,25 @@ from=is.getPosition();
         for (int i = 0; i < numBits; i++) {
             if (((value[i / 8] & 0xff) & (0x80 >> (i % 8))) == (0x80 >> (i % 8))) {
                 sb.append('1');
-            }
-            else {
+            } else {
                 sb.append('0');
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public long getFrom() {
+        return from;
+    }
+
+    @Override
+    public long getTo() {
+        return to;
+    }
+
+    @Override
+    public long getFromImplicit() {
+        return fromImplicit;
     }
 }

@@ -52,12 +52,12 @@ public class OCSPItem {
 
     public static  Object version(OCSPVersion version) {
         if (version == null){
-           return new TaggedString(0).addTag("v1").addTag("default");
+           return new TaggedString(String.valueOf(0)).addTag("v1").addTag("default");
         }
 
         switch (version.getInt()) {
             case 0:
-                return new TaggedString(version.getPositiveValue()).addTag("v1");
+                return new TaggedString(String.valueOf(version.getPositiveValue())).addTag("v1");
         }
         return version.getValue();
 

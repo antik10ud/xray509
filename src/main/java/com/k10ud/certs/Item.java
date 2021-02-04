@@ -21,24 +21,24 @@
 
 package com.k10ud.certs;
 
-import com.k10ud.asn1.x509_certificate.Name;
 import org.openmuc.jasn1.ber.SourcePostitionable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Item extends ArrayList<KV> {
-    public static final ItemDumper idumper= new ItemDumper();
+    public static final ItemDumper idumper = new ItemDumper();
     public static final Item EMPTY = new Item();
-    //private final List<KV> props = new ArrayList<>();
-
 
     public List<KV> getProps() {
         return this;
     }
 
+    public Item(String key, Object value) {
+        prop(key, value);
+    }
 
-    public Item(Object key, Object value) {
+    public Item(TaggedString key, Object value) {
         prop(key, value);
     }
 
@@ -47,11 +47,17 @@ public class Item extends ArrayList<KV> {
 
     @Override
     public String toString() {
-        return idumper.toString(null,this);
+        return idumper.toString(null, this);
     }
 
 
-    public Item prop(Object key, Object value) {
+    public Item prop(String key, Object value) {
+        if (key != null)
+            prop(new KV(key, value));
+        return this;
+    }
+
+    public Item prop(TaggedString key, Object value) {
         if (key != null)
             prop(new KV(key, value));
         return this;
@@ -63,24 +69,32 @@ public class Item extends ArrayList<KV> {
         return this;
     }
 
-    public Item prop(Object key) {
+    public Item prop(TaggedString key) {
         if (key != null)
             add(new KV(key, null));
         return this;
     }
 
-    public Item src(SourcePostitionable obj) {
-        prop("@src",obj);
+    public Item prop(String key) {
+        if (key != null)
+            add(new KV(key, null));
         return this;
     }
 
 
-    /*
-    public Item prop(NamedItem item) {
-        if (item != null)
-            prop(item.getName(), item.getItem());
+    public Object getProp(String key) {
+        for (KV p : getProps()) {
+            if (p.key.equals(key))
+                return p.value;
+        }
+        return null;
+    }
+
+
+    public Item transfer(Item i) {
+        for (KV p : i) {
+            prop(p);
+        }
         return this;
     }
-*/
-
 }

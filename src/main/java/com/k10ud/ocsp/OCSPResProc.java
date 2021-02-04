@@ -24,11 +24,15 @@ package com.k10ud.ocsp;
 import com.k10ud.asn1.x509_certificate.*;
 import com.k10ud.certs.Context;
 import com.k10ud.certs.Item;
+import com.k10ud.certs.KV;
 import com.k10ud.certs.TaggedString;
 import com.k10ud.certs.extensions.CRLReasonCodeProc;
+import com.k10ud.certs.util.ASN1Helper;
 import com.k10ud.certs.util.ItemHelper;
+import org.openmuc.jasn1.ber.types.BerGeneralizedTime;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 
@@ -85,7 +89,7 @@ public class OCSPResProc {
 
         OCSPResponse ocspr = new OCSPResponse();
         try {
-            ocspr.decode(0,ocspRes, true);
+            ocspr.decode(0, ocspRes, true);
         } catch (IOException e) {
             out.prop("Unable to process data as OCSPResponse", e);
             out.prop("Raw Value", ItemHelper.xprint(ocspRes));
@@ -108,8 +112,8 @@ public class OCSPResProc {
         if (bytes.response != null) {
             boolean proc = false;
             if (bytes.responseType != null) {
-                if ("1.3.6.1.5.5.7.48.1.1".equals(bytes.responseType.toString())) {
-                    out.prop("value", ocspResponse(bytes.from,bytes.response.value));
+                if ("1.3.6.1.5.5.7.48.1.1" .equals(bytes.responseType.toString())) {
+                    out.prop("value", ocspResponse(bytes.from, bytes.response.value));
                     proc = true;
                 }
             }
@@ -128,7 +132,7 @@ public class OCSPResProc {
        certs                [0] EXPLICIT SEQUENCE OF Certificate OPTIONAL }
 
      */
-    private Item ocspResponse(long offset,byte[] value) {
+    private Item ocspResponse(long offset, byte[] value) {
         Item out = new Item();
         BasicOCSPResponse bor = new BasicOCSPResponse();
        /* System.out.println(
@@ -136,7 +140,7 @@ public class OCSPResProc {
         );*/
         try {
             //Base64.encodeBytes(value)
-            bor.decode(offset,value, true);
+            bor.decode(offset, value, true);
         } catch (IOException e) {
             out.prop("Unable to process data as BasicOCSPResponse", e);
             out.prop("Raw Value", bor);
@@ -170,7 +174,8 @@ public class OCSPResProc {
         if (rd.producedAt != null)
             out.prop("producedAt", ItemHelper.generalizedTime(rd.producedAt));
         if (rd.responses != null)
-            out.prop("responses", responses(rd.responses.seqOf));
+            out.prop("responses", responses(rd.producedAt, rd.responses.seqOf));
+
         if (rd.responseExtensions != null)
             out.prop("responseExtensions", OCSPItem.extensions(context, rd.responseExtensions.seqOf));
 
@@ -178,11 +183,11 @@ public class OCSPResProc {
         return out;
     }
 
-    private Item responses(List<OCSPSingleResponse> seqOf) {
+    private Item responses(BerGeneralizedTime producedAt, List<OCSPSingleResponse> seqOf) {
         Item out = new Item();
         int k = 0;
         for (OCSPSingleResponse i : seqOf)
-            out.prop(ItemHelper.index(k++), ocspSingleResponse(i));
+            out.prop(ItemHelper.index(k++), ocspSingleResponse(producedAt, i));
         return out;
     }
 
@@ -199,13 +204,45 @@ public class OCSPResProc {
         revocationTime              GeneralizedTime,
         revocationReason    [0]     EXPLICIT CRLReason OPTIONAL }
      */
-    private Item ocspSingleResponse(OCSPSingleResponse i) {
+    private Item ocspSingleResponse(BerGeneralizedTime producedAt, OCSPSingleResponse i) {
         Item out = new Item();
         if (i.certID != null)
             out.prop("certID", OCSPItem.certId(context, i.certID));
 
         if (i.certStatus != null)
             out.prop("certStatus", certStatus(context, i.certStatus));
+
+        if (i.thisUpdate != null)
+            out.prop("thisUpdate", ItemHelper.generalizedTime(i.thisUpdate));
+
+        if (i.nextUpdate != null) {
+            out.prop("nextUpdate", ItemHelper.generalizedTime(i.nextUpdate));
+            out.prop(new TaggedString("Validity").addTag("synthetic"), ItemHelper.duration(i.thisUpdate, i.nextUpdate));
+
+        } else {
+            out.prop("validity", "newer revocation information is available all the time");
+        }
+        if (i.singleExtensions != null) {
+            Item ext = ItemHelper.extensions(context, i.singleExtensions);
+            out.prop("singleExtensions", ext);
+            //calculate retention period
+            ZonedDateTime dd1 = ASN1Helper.time(producedAt);
+            for (KV e : ext) {
+                if ("1.3.6.1.5.5.7.48.1.6" .equals(e.getMainKey())) {
+                    Item values = (Item) e.getValue();
+                    for (int i1 = 0, valuesSize = values.size(); i1 < valuesSize; i1++) {
+                        KV v = values.get(i1);
+                        ZonedDateTime dd0 = (ZonedDateTime) v.getValue();
+                        values.prop(new TaggedString("Retention").addTag("synthetic"), ItemHelper.duration(dd0, dd1));
+                    }
+                }
+            }
+
+
+        }
+
+        //TODO: Service Locator Ext and check those OCSP servers...
+
         return out;
     }
 
@@ -219,14 +256,14 @@ public class OCSPResProc {
     private Item certStatus(Context context, CertStatus certStatus) {
         Item i = new Item();
         if (certStatus.good != null) {
-            i.prop("value","good");
+            i.prop("value", "good");
         }
         if (certStatus.revoked != null) {
-            i.prop("value","revoked");
+            i.prop("value", "revoked");
             i.prop("revokedInfo", revokedInfo(certStatus.revoked));
         }
         if (certStatus.unknown != null) {
-            i.prop("value","unknown");
+            i.prop("value", "unknown");
         }
 
         return i;
@@ -243,7 +280,6 @@ public class OCSPResProc {
 
         return i;
     }
-
 
 
     private Item responderId(OCSPResponderID id) {
@@ -267,7 +303,7 @@ public class OCSPResProc {
 }
      */
     private TaggedString status(OCSPResponseStatus status) {
-        TaggedString ts = new TaggedString(status.value);
+        TaggedString ts = new TaggedString(String.valueOf(status.value));
         switch ("" + status.value) {
             case "0":
                 ts.addTag("successful");

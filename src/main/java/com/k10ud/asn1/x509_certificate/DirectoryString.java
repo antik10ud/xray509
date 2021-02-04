@@ -25,199 +25,197 @@
 
 package com.k10ud.asn1.x509_certificate;
 
-import java.io.IOException;
-import java.io.EOFException;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.math.BigInteger;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.io.UnsupportedEncodingException;
 import org.openmuc.jasn1.ber.*;
-import org.openmuc.jasn1.ber.types.*;
 import org.openmuc.jasn1.ber.types.string.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
-public class DirectoryString implements Encodedable,Decodeable,SourcePostitionable /*1*/ {
 
-public byte[] code = null; public long from,to;
-public BerTeletexString teletexString = null;
+public class DirectoryString implements Encodedable, Decodeable, SourcePostitionable /*1*/ {
 
-public BerPrintableString printableString = null;
+    public byte[] code = null;
+    public long from, to;
+    public BerTeletexString teletexString = null;
 
-public BerUniversalString universalString = null;
+    public BerPrintableString printableString = null;
 
-public BerUTF8String utf8String = null;
+    public BerUniversalString universalString = null;
 
-public BerBMPString bmpString = null;
+    public BerUTF8String utf8String = null;
 
-public DirectoryString() {
-}
+    public BerBMPString bmpString = null;
 
-public DirectoryString(byte[] code) {
-this.code = code;
-}
+    public DirectoryString() {
+    }
 
-public DirectoryString(BerTeletexString teletexString, BerPrintableString printableString, BerUniversalString universalString, BerUTF8String utf8String, BerBMPString bmpString) {
-this.teletexString = teletexString;
-this.printableString = printableString;
-this.universalString = universalString;
-this.utf8String = utf8String;
-this.bmpString = bmpString;
-}
+    public DirectoryString(byte[] code) {
+        this.code = code;
+    }
 
-public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
-if (code != null) {
-for (int i = code.length - 1; i >= 0; i--) {
-os.write(code[i]);
-}
-return code.length;
+    public DirectoryString(BerTeletexString teletexString, BerPrintableString printableString, BerUniversalString universalString, BerUTF8String utf8String, BerBMPString bmpString) {
+        this.teletexString = teletexString;
+        this.printableString = printableString;
+        this.universalString = universalString;
+        this.utf8String = utf8String;
+        this.bmpString = bmpString;
+    }
 
-}
-int codeLength = 0;
-if (bmpString != null) {
-codeLength += bmpString.encode(os, true);
-return codeLength;
+    public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
+        if (code != null) {
+            for (int i = code.length - 1; i >= 0; i--) {
+                os.write(code[i]);
+            }
+            return code.length;
 
-}
+        }
+        int codeLength = 0;
+        if (bmpString != null) {
+            codeLength += bmpString.encode(os, true);
+            return codeLength;
 
-if (utf8String != null) {
-codeLength += utf8String.encode(os, true);
-return codeLength;
+        }
 
-}
+        if (utf8String != null) {
+            codeLength += utf8String.encode(os, true);
+            return codeLength;
 
-if (universalString != null) {
-codeLength += universalString.encode(os, true);
-return codeLength;
+        }
 
-}
+        if (universalString != null) {
+            codeLength += universalString.encode(os, true);
+            return codeLength;
 
-if (printableString != null) {
-codeLength += printableString.encode(os, true);
-return codeLength;
+        }
 
-}
+        if (printableString != null) {
+            codeLength += printableString.encode(os, true);
+            return codeLength;
 
-if (teletexString != null) {
-codeLength += teletexString.encode(os, true);
-return codeLength;
+        }
 
-}
+        if (teletexString != null) {
+            codeLength += teletexString.encode(os, true);
+            return codeLength;
 
-throw new IOException("Error encoding BerChoice: No item in choice was selected.");
-}
+        }
 
-public int decode(long sourceOffset,byte[] bytes, BerIdentifier berIdentifier) throws IOException {
-return decode(new CountingInputStream(sourceOffset-(berIdentifier==null?0:(berIdentifier.to-berIdentifier.from)), new ByteArrayInputStream(bytes)), berIdentifier);
+        throw new IOException("Error encoding BerChoice: No item in choice was selected.");
+    }
 
-}
-public int decode(CountingInputStream is, boolean explicit) throws IOException {;
+    public int decode(long sourceOffset, byte[] bytes, BerIdentifier berIdentifier) throws IOException {
+        return decode(new CountingInputStream(sourceOffset - (berIdentifier == null ? 0 : (berIdentifier.to - berIdentifier.from)), new ByteArrayInputStream(bytes)), berIdentifier);
 
-    return decode(is, null);
+    }
 
- };
+    public int decode(CountingInputStream is, boolean explicit) throws IOException {
+        ;
 
-public int decode(CountingInputStream is, BerIdentifier berIdentifier) throws IOException {
-int codeLength = 0;
-this.from=is.getPosition()-(berIdentifier==null?0:(berIdentifier.to-berIdentifier.from));
-BerIdentifier passedIdentifier = berIdentifier;
+        return decode(is, null);
 
-if (berIdentifier == null) {
-berIdentifier = new BerIdentifier();
-codeLength += berIdentifier.decode(is);
-}
+    }
 
-BerLength length = new BerLength();
-if (berIdentifier.equals(BerTeletexString.identifier)) {
-teletexString = new BerTeletexString();
-codeLength += teletexString.decode(is, false);
-this.to=is.getPosition();
-return codeLength;
-}
+    ;
 
-if (berIdentifier.equals(BerPrintableString.identifier)) {
-printableString = new BerPrintableString();
-codeLength += printableString.decode(is, false);
-this.to=is.getPosition();
-return codeLength;
-}
+    public int decode(CountingInputStream is, BerIdentifier berIdentifier) throws IOException {
+        int codeLength = 0;
+        this.from = is.getPosition() - (berIdentifier == null ? 0 : (berIdentifier.to - berIdentifier.from));
+        BerIdentifier passedIdentifier = berIdentifier;
 
-if (berIdentifier.equals(BerUniversalString.identifier)) {
-universalString = new BerUniversalString();
-codeLength += universalString.decode(is, false);
-this.to=is.getPosition();
-return codeLength;
-}
+        if (berIdentifier == null) {
+            berIdentifier = new BerIdentifier();
+            codeLength += berIdentifier.decode(is);
+        }
 
-if (berIdentifier.equals(BerUTF8String.identifier)) {
-utf8String = new BerUTF8String();
-codeLength += utf8String.decode(is, false);
-this.to=is.getPosition();
-return codeLength;
-}
+        BerLength length = new BerLength();
+        if (berIdentifier.equals(BerTeletexString.identifier)) {
+            teletexString = new BerTeletexString();
+            codeLength += teletexString.decode(is, false);
+            this.to = is.getPosition();
+            return codeLength;
+        }
 
-if (berIdentifier.equals(BerBMPString.identifier)) {
-bmpString = new BerBMPString();
-codeLength += bmpString.decode(is, false);
-this.to=is.getPosition();
-return codeLength;
-}
+        if (berIdentifier.equals(BerPrintableString.identifier)) {
+            printableString = new BerPrintableString();
+            codeLength += printableString.decode(is, false);
+            this.to = is.getPosition();
+            return codeLength;
+        }
 
-if (passedIdentifier != null) {
-this.to=is.getPosition();
-return 0;
-}
-this.to=is.getPosition();
-throw new IOException("Error decoding BerChoice: Identifier matched to no item.");
-}
+        if (berIdentifier.equals(BerUniversalString.identifier)) {
+            universalString = new BerUniversalString();
+            codeLength += universalString.decode(is, false);
+            this.to = is.getPosition();
+            return codeLength;
+        }
 
-public void encodeAndSave(int encodingSizeGuess) throws IOException {
-BerByteArrayOutputStream os = new BerByteArrayOutputStream(encodingSizeGuess);
-encode(os, false);
-code = os.getArray();
-}
+        if (berIdentifier.equals(BerUTF8String.identifier)) {
+            utf8String = new BerUTF8String();
+            codeLength += utf8String.decode(is, false);
+            this.to = is.getPosition();
+            return codeLength;
+        }
 
-public String toString() {
-if ( teletexString!= null) {
-return "CHOICE{teletexString: " + teletexString + "}";
-}
+        if (berIdentifier.equals(BerBMPString.identifier)) {
+            bmpString = new BerBMPString();
+            codeLength += bmpString.decode(is, false);
+            this.to = is.getPosition();
+            return codeLength;
+        }
 
-if ( printableString!= null) {
-return "CHOICE{printableString: " + printableString + "}";
-}
+        if (passedIdentifier != null) {
+            this.to = is.getPosition();
+            return 0;
+        }
+        this.to = is.getPosition();
+        throw new IOException("Error decoding BerChoice: Identifier matched to no item.");
+    }
 
-if ( universalString!= null) {
-return "CHOICE{universalString: " + universalString + "}";
-}
+    public void encodeAndSave(int encodingSizeGuess) throws IOException {
+        BerByteArrayOutputStream os = new BerByteArrayOutputStream(encodingSizeGuess);
+        encode(os, false);
+        code = os.getArray();
+    }
 
-if ( utf8String!= null) {
-return "CHOICE{utf8String: " + utf8String + "}";
-}
+    public String toString() {
+        if (teletexString != null) {
+            return "CHOICE{teletexString: " + teletexString + "}";
+        }
 
-if ( bmpString!= null) {
-return "CHOICE{bmpString: " + bmpString + "}";
-}
+        if (printableString != null) {
+            return "CHOICE{printableString: " + printableString + "}";
+        }
 
-return "unknown";
-}
+        if (universalString != null) {
+            return "CHOICE{universalString: " + universalString + "}";
+        }
 
-@Override
+        if (utf8String != null) {
+            return "CHOICE{utf8String: " + utf8String + "}";
+        }
 
- public long getFrom() {
+        if (bmpString != null) {
+            return "CHOICE{bmpString: " + bmpString + "}";
+        }
 
-     return from;
+        return "unknown";
+    }
 
-}
+    @Override
 
-@Override
+    public long getFrom() {
 
-public long getTo() {
+        return from;
 
-    return to;
+    }
 
-}
+    @Override
+
+    public long getTo() {
+
+        return to;
+
+    }
 
 }
 

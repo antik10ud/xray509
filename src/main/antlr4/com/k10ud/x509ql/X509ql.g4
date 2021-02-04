@@ -115,8 +115,17 @@ propSelector
     ;
 
 returnElement
-    :  variableName returnProp? ('AS' (fieldName=STRING_LITERAL|PATH))?
+    :  (literal|variableName|function) returnProp? ('AS' (fieldName=STRING_LITERAL|PATH))?
     ;
+
+literal
+    :  STRING_LITERAL
+    ;
+
+function
+    :  functionName '(' variableName ')'
+    ;
+
 
 returnProp
     :  '{' propName? '}'
@@ -139,6 +148,11 @@ returnItem
 variableName
     : varid
     ;
+
+functionName
+    : funcid
+    ;
+
 
 selectElementDepth
     : DEPTH (ALL|decimalLiteral)?
@@ -294,6 +308,9 @@ propName:                 ID;
 
 
 varid:                 '$'ID;
+
+funcid:                 ID;
+
 
 ruid:                 ID|RID;
 

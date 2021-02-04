@@ -28,7 +28,19 @@ import com.k10ud.certs.TaggedString;
 import com.k10ud.certs.util.ItemHelper;
 
 import java.io.IOException;
+import java.util.List;
 
+/*
+TODO:
+
+  id-ce-policyMappings OBJECT IDENTIFIER ::=  { id-ce 33 }
+
+   PolicyMappings ::= SEQUENCE SIZE (1..MAX) OF SEQUENCE {
+        issuerDomainPolicy      CertPolicyId,
+        subjectDomainPolicy     CertPolicyId }
+
+
+ */
 public class PolicyProc extends BaseExtensionProc {
 
     @Override
@@ -37,26 +49,30 @@ public class PolicyProc extends BaseExtensionProc {
         CertificatePolicies cp = new CertificatePolicies();
         cp.decode(e.extnValue.from,e.extnValue.value, true);
         if (cp.seqOf != null) {
-            int k=0;
-            for (PolicyInformation pi : cp.seqOf)
-                out.prop(ItemHelper.index(k++),policyInformation(ctx, pi));
+            List<PolicyInformation> seqOf = cp.seqOf;
+            for (int i = 0; i < seqOf.size(); i++) {
+                PolicyInformation pi = seqOf.get(i);
+                out.transfer(policyInformation(ctx, pi, i));
+            }
         }
-        return out;
+        return new Item("Policies",out);
     }
 
-    private Item policyInformation(Context ctx, PolicyInformation pi) {
+    private Item policyInformation(Context ctx, PolicyInformation pi, int index) {
         if (pi == null)
             return null;
         Item out = new Item();
         if (pi.policyQualifiers != null && pi.policyQualifiers.seqOf != null) {
-            int k=0;
-            for (PolicyQualifierInfo i : pi.policyQualifiers.seqOf)
-                out.prop(ItemHelper.index(k++),policyQualifier(ctx, i));
+            List<PolicyQualifierInfo> seqOf = pi.policyQualifiers.seqOf;
+            for (int i1 = 0; i1 < seqOf.size(); i1++) {
+                PolicyQualifierInfo i = seqOf.get(i1);
+                out.transfer(policyQualifier(ctx, i, i1));
+            }
         }
-        return new Item(ctx.nameAndOid(pi.policyIdentifier), out);
+        return new Item(ctx.nameAndOid(pi.policyIdentifier).addIndexTag(index), out);
     }
 
-    private Item policyQualifier(Context ctx, PolicyQualifierInfo i) {
+    private Item policyQualifier(Context ctx, PolicyQualifierInfo i, int index) {
         if (i==null)
             return null;
 
@@ -82,6 +98,7 @@ public class PolicyProc extends BaseExtensionProc {
             if (i.qualifier!=null)
                 item.prop("Value", i.qualifier.value);
         }
-        return new Item(ctx.nameAndOid(i.policyQualifierId), item);
+        return new Item(ctx.nameAndOid(i.policyQualifierId).addIndexTag(index),item);
+
     }
 }

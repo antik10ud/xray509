@@ -42,7 +42,7 @@ public class CRLDistPointsProc extends BaseExtensionProc {
         List<DistributionPoint> seqOf = crldp.seqOf;
         if (crldp.seqOf != null)
             for (int i = 0, n = seqOf.size(); i < n; i++)
-                out.prop("DistributionPoint[" + i + "]", distributionPoint(ctx, seqOf.get(i)));
+                out.prop(ItemHelper.index(i,"DistributionPoint"), distributionPoint(ctx, seqOf.get(i)));
         return out;
     }
 
@@ -53,7 +53,7 @@ public class CRLDistPointsProc extends BaseExtensionProc {
         if (dp.cRLIssuer != null)
             out.prop("CRLIssuer", ItemHelper.generalNames(ctx, dp.cRLIssuer));
         if (dp.reasons != null)
-            out.prop("Reasons", dp.reasons);
+            out.prop("Reasons", dp.reasons);//TODO:add flags
         return out;
     }
 
@@ -64,7 +64,7 @@ public class CRLDistPointsProc extends BaseExtensionProc {
             return out;
         } else if (distributionPoint.nameRelativeToCRLIssuer != null) {
             Item out = new Item();
-            out.prop("NameRelativeToCRLIssuer", ItemHelper.relativeDistinguishedName(ctx, distributionPoint.nameRelativeToCRLIssuer));
+            out.prop("NameRelativeToCRLIssuer", ItemHelper.relativeDistinguishedName(ctx, distributionPoint.nameRelativeToCRLIssuer, null));
             return out;
         }
         return Item.EMPTY;

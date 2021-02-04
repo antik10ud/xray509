@@ -80,7 +80,7 @@ public class XrayOCSPIt {
 
 
         @Option(names = {"--nonce"}, description = "Use OCSP nonce extension")
-        public boolean nonce = true;
+        public boolean nonce = false;
 
         @Option(names = {"--use-get"}, description = "Use OCSP GET request")
         public boolean useGet;
@@ -113,7 +113,7 @@ public class XrayOCSPIt {
 
     public static Item run(Args app) throws IOException {
         Item run = new Item();
-        Context context = app.context!=null?app.context: new Context(() -> null);
+        Context context = app.context != null ? app.context : new Context(() -> null);
         {
             OCSPRequest ocspRcreq = new OCSPRequest();
             OCSPTBSRequest req = new OCSPTBSRequest();
@@ -140,72 +140,72 @@ public class XrayOCSPIt {
             String serialNumber = app.serial;
 
 
-            if (app.cert!=null&&app.serial!=null) {
+            if (app.cert != null && app.serial != null) {
                 throw new UnmatchedArgumentException("Cannot use cert and serial parameter at the same time");
 
             }
-            if (app.cert==null&&app.serial==null) {
+            if (app.cert == null && app.serial == null) {
                 throw new UnmatchedArgumentException("Must use cert or serial");
 
             }
 
 
-            if (app.cert!=null) {
-                  byte[] data = CliUtil.readCertificate(app.cert);
+            if (app.cert != null) {
+                byte[] data = CliUtil.readCertificate(app.cert);
 
-               if (data == null)
-                   throw new UnmatchedArgumentException("Cannot obtain certificate from location " + app.cert);
-
-
-               Item items = new CertificateProc(context).parse(data).prop("@encoded", data);
-
-               if (app.dumpChekedCert) {
-                   run.prop("Certificate to check", items);
-               }
-
-               QueryableMap map = new QueryableMap(items);
-
-               if (certOcspServers.size() == 0) {
-
-                   List<String> ocspsEntries = map.q("(Extensions/*/1.3.6.1.5.5.7.1.1/AccessDescription[*])/Method=1.3.6.1.5.5.7.48.1");
-                   List<String> ocsps = map.v("*/Location/uniformResourceIdentifier", ocspsEntries);
-                   for (String i : ocsps) {
-                       //  if (ocsps.size() > 0) {
-                       //    certOcspServer = ocsps.get(0)
-                       certOcspServers.add(i);
-                       run.prop("ocsp server location from certificate AIA", i);
-                       //  System.out.println(dumper.toString(new Item("ocsp server location from certificate AIA: ", i)));
-                       if (!app.processAll)
-                           break;
-                   }
-
-               }
+                if (data == null)
+                    throw new UnmatchedArgumentException("Cannot obtain certificate from location " + app.cert);
 
 
-               if (location == null) {
-                   List<String> caIssuers = map.q("(Extensions/*/1.3.6.1.5.5.7.1.1/AccessDescription[*])/Method=1.3.6.1.5.5.7.48.2");
-                   List<String> locations = map.v("*/Location/uniformResourceIdentifier", caIssuers);
-                   if (locations.size() > 0) {
-                       location = locations.get(0);
-                       run.prop("caIssuers location from certificate AIA " + (locations.size() > 1 ? "(first entry)" : ""), location);
-                       // System.out.println(dumper.toString(new Item("caIssuers location from certificate AIA (first entry)", location)));
-                   }
-               }
+                Item items = new CertificateProc(context).parse(data);//.prop("@encoded", data);
 
-               if (location == null) {
-                   //obtain issuer from (Authority key identifier) 2.5.29.35
-                   List<String> aki = map.q("Extensions/*/2.5.29.35/Identifier=(*)");
-                   if (aki.size() > 0) {
-                       byte[] kvs = context.trustedListInfoByAKI(aki.get(0));
-                       if (kvs != null) {
-                           location = "data:" + Base64.encodeBytes(kvs);
-                       }
-                   }
-               }
+                if (app.dumpChekedCert) {
+                    run.prop("Certificate to check", items);
+                }
+
+                QueryableMap map = new QueryableMap(items);
+
+                if (certOcspServers.size() == 0) {
+
+                    List<String> ocspsEntries = map.q("(Extensions/1.3.6.1.5.5.7.1.1[*]/AccessDescription[*])/Method=1.3.6.1.5.5.7.48.1");
+                    List<String> ocsps = map.v("*/Location/uri", ocspsEntries);
+                    for (String i : ocsps) {
+                        //  if (ocsps.size() > 0) {
+                        //    certOcspServer = ocsps.get(0)
+                        certOcspServers.add(i);
+                        run.prop("ocsp server location from certificate AIA", i);
+                        //  System.out.println(dumper.toString(new Item("ocsp server location from certificate AIA: ", i)));
+                        if (!app.processAll)
+                            break;
+                    }
+
+                }
 
 
-               serialNumber =String.valueOf(map.k("SerialNumber"));
-             }
+                if (location == null) {
+                    List<String> caIssuers = map.q("(Extensions/1.3.6.1.5.5.7.1.1[*]/AccessDescription[*])/Method=1.3.6.1.5.5.7.48.2");
+                    List<String> locations = map.v("*/Location/uri", caIssuers);
+                    if (locations.size() > 0) {
+                        location = locations.get(0);
+                        run.prop("caIssuers location from certificate AIA " + (locations.size() > 1 ? "(first entry)" : ""), location);
+                        // System.out.println(dumper.toString(new Item("caIssuers location from certificate AIA (first entry)", location)));
+                    }
+                }
+
+                if (location == null) {
+                    //obtain issuer from (Authority key identifier) 2.5.29.35
+                    List<String> aki = map.q("Extensions/2.5.29.35[*]/Identifier=(*)");
+                    if (aki.size() > 0) {
+                        byte[] kvs = context.trustedListInfoByAKI(aki.get(0));
+                        if (kvs != null) {
+                            location = "data:" + Base64.encodeBytes(kvs);
+                        }
+                    }
+                }
+
+
+                serialNumber = String.valueOf(map.k("SerialNumber"));
+            }
 
             if (location == null)
                 throw new UnmatchedArgumentException("Cannot obtain issuer certificate location from certificate nor parameters");
@@ -217,7 +217,7 @@ public class XrayOCSPIt {
                 if (issuerData == null)
                     throw new UnmatchedArgumentException("Cannot obtain issuer certificate from location " + location);
 
-                Item issuerItems = new CertificateProc(context).parse(issuerData).prop("@encoded", issuerData);
+                Item issuerItems = new CertificateProc(context).parse(issuerData);//.prop("@encoded", issuerData);
 
 
                 if (app.dumpChekedIssuerCert) {
@@ -227,14 +227,41 @@ public class XrayOCSPIt {
 
                 QueryableMap issuerMap = new QueryableMap(issuerItems);
 
-                byte[] issuerPublicKey = (byte[]) issuerMap.k("SubjectPublicKeyInfo/@encoded");
-                byte[] issuerSubject = (byte[]) issuerMap.k("Subject/@encoded");
+
+                byte[] issuerPublicKey = issuerMap.encodedImplicit(issuerData, "SubjectPublicKeyInfo/PublicKey");
+          /*      System.out.println( "O:"+ASN1Helper.bytesToHex(issuerPublicKey,""));
+
+                issuerPublicKey = (byte[]) issuerMap.k("SubjectPublicKeyInfo/@encoded");
+*/
+                 if (issuerPublicKey == null) {
+                    throw new RuntimeException("cannot extract SubjectPublicKeyInfo");
+                }
+  //              System.out.println( "O:"+ASN1Helper.bytesToHex(issuerPublicKey,""));
+
+                /*{
+                    SubjectPublicKeyInfo xy=new SubjectPublicKeyInfo();
+                    xy.decode(0,issuerPublicKey,false);
+                    issuerPublicKey=xy.encoded();
+                    System.out.println( "O:"+ASN1Helper.bytesToHex(issuerPublicKey,""));
+
+
+                }*/
+
+
+                byte[] issuerSubject = issuerMap.encoded(issuerData, "Subject");
+                if (issuerSubject == null) {
+                    throw new RuntimeException("cannot extract Subject");
+                }
 
 //                String hash = app.hashAlgo"SHA-256";//app.hash todo
                 certId.hashAlgorithm = app.hashAlgo.getAlgorithmIdentifier();
                 certId.issuerNameHash = new BerOctetString(ASN1Helper.hash(app.hashAlgo.getJalg(), issuerSubject));
                 certId.issuerKeyHash = new BerOctetString(ASN1Helper.hash(app.hashAlgo.getJalg(), issuerPublicKey));
-                certId.serialNumber = new CertificateSerialNumber(serialNumber.toLowerCase().startsWith("0x")?new BigInteger(serialNumber.substring(2),16):new BigInteger(serialNumber));
+                try {
+                    certId.serialNumber = new CertificateSerialNumber(serialNumber.toLowerCase().startsWith("0x") ? new BigInteger(serialNumber.substring(2), 16) : new BigInteger(serialNumber));
+                } catch ( Exception x) {
+                    throw new RuntimeException("Invalid serial number " + serialNumber);
+                }
             }
 
 
@@ -254,7 +281,7 @@ public class XrayOCSPIt {
                     ires = res;
                 }
 
-                Extensions sre=null;
+                Extensions sre = null;
                 if (app.nonce) {
                     Extension e = new Extension();
                     {
@@ -297,7 +324,7 @@ public class XrayOCSPIt {
                 } else {
                     response = HTTPItem.send(certOcspServer, query, "application/ocsp-request");
                 }
-                ires.prop(response.item);
+                ires.prop("response", response.item);
 
 
                 if (response.response != null) {

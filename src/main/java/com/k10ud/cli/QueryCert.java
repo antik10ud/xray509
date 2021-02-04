@@ -24,6 +24,7 @@ package com.k10ud.cli;
 import com.k10ud.certs.Item;
 import com.k10ud.certs.KV;
 import com.k10ud.certs.TaggedString;
+import com.k10ud.certs.util.ItemHelper;
 import com.k10ud.x509ql.X509qlLexer;
 import com.k10ud.x509ql.X509qlListener;
 import com.k10ud.x509ql.X509qlParser;
@@ -32,12 +33,15 @@ import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.openmuc.jasn1.ber.SourcePostitionable;
 
 import java.util.*;
 
 public class QueryCert {
 
     public static class Return {
+        String function;
+        String literal;
         String variable;
         String fieldName;
         String prop;
@@ -139,6 +143,7 @@ public class QueryCert {
     List<Segments> select = new ArrayList<>();
     List<Return> returns = new ArrayList<>();
 
+
     public static QueryCert parse(String query) {
         CodePointCharStream input = CharStreams.fromString(query);
         X509qlLexer lexer = new X509qlLexer(input);
@@ -192,7 +197,7 @@ public class QueryCert {
         }
     }
 
-    public Item project(Item items, HashMap<String, String> ctx) {
+    public Item project(byte[] source, Item items, HashMap<String, String> ctx) {
         Item output = new Item();
         VarHolder vars = new VarHolder();
         vars.addAll(ctx);
@@ -212,74 +217,103 @@ public class QueryCert {
             return new Item();
         }*/
         if (returns.size() > 0) {
-            return returnItems(vars);
+            return returnItems(source, vars);
         }
         return output;
     }
 
-    private Item returnItems(VarHolder vars) {
+    private Item returnItems(byte[] source, VarHolder vars) {
         Item output = new Item();
+        Object rawValue = null;
 
         for (Return r : returns) {
             Object value = null;
             KV kv = null;
-            String var = r.variable;
-            if (var.startsWith("$ctx.")) {
-                String v = var.substring(5);
-                value = vars.getVarValue("ξ" + v);
+
+            if (r.literal!=null) {
+                output.add(new KV(fieldName(r, kv), r.literal));
+
             } else {
-                kv = vars.getVar(var);
-                if (kv != null) {
-                    if (r.prop != null) {
-                        switch (r.prop) {
-                            case "ξvalue":
-                                Object v = kv.getValue();
-                                if (v instanceof String) {
-                                    value = (String) v;
-                                } else if (v instanceof TaggedString) {
-                                    value = String.valueOf(((TaggedString) v).getId());
-                                } else {
-                                    value = String.valueOf(v);//.replaceAll("\n","");
-                                }
-                                break;
-                            case "ξkey":
-                                value = kv.getKey();
-                                break;
-                            default:
-                                if (kv.getValue() instanceof TaggedString) {
-                                    TaggedString ts = (TaggedString) (kv.getValue());
-                                    Iterator<TaggedString.Attr> iterator = ts.tags().iterator();
-                                    while (iterator.hasNext()) {
-                                        TaggedString.Attr attr = iterator.next();
-                                        if (r.prop.equalsIgnoreCase(attr.getAttr())) {
-                                            value = attr.getValue();
-                                            break;
+                String var = r.variable;
+                if (var.startsWith("$ctx.")) {
+                    String v = var.substring(5);
+                    value = vars.getVarValue("ξ" + v);
+                } else {
+                    kv = vars.getVar(var);
+                    if (kv != null) {
+                        if (r.prop != null) {
+                            switch (r.prop) {
+                                case "ξvalue":
+                                    rawValue = kv.getValue();
+                                    if (rawValue instanceof String) {
+                                        value = (String) rawValue;
+                                    } else if (rawValue instanceof TaggedString) {
+                                        value = String.valueOf(((TaggedString) rawValue).getId());
+                                    } else {
+                                        value = String.valueOf(rawValue);//.replaceAll("\n","");
+                                    }
+                                    break;
+                                case "ξkey":
+                                    value = kv.getKey();
+                                    rawValue = value;
+                                    break;
+                                default:
+                                    rawValue = kv.getValue();
+                                    if (rawValue instanceof TaggedString) {
+                                        TaggedString ts = (TaggedString) rawValue;
+                                        Iterator<TaggedString.Attr> iterator = ts.tags().iterator();
+                                        while (iterator.hasNext()) {
+                                            TaggedString.Attr attr = iterator.next();
+                                            if (r.prop.equalsIgnoreCase(attr.getAttr())) {
+                                                value = attr.getValue();
+                                                break;
+                                            }
                                         }
                                     }
-                                }
-                        }
-                    } else {
-                        Object v = kv.getValue();
-                        if (v instanceof String) {
-                            value = (String) v;
-                        } else if (v instanceof TaggedString) {
-                            value = String.valueOf(((TaggedString) v).getId());
+                            }
                         } else {
-                            value = v;//String.valueOf(v);
+                            rawValue = kv.getValue();
+                            if (rawValue instanceof String) {
+                                value = rawValue;
+                            } else if (rawValue instanceof TaggedString) {
+                                value = String.valueOf(((TaggedString) rawValue).getId());
+                            } else {
+                                value = rawValue;//String.valueOf(v);
+                            }
                         }
                     }
+                    if (value == null) {
+                        value = "<NULL>";
+                    }
                 }
-                if (value == null) {
-                    value = "<NULL>";
-                }
+                output.add(new KV(fieldName(r, kv), applyFunction(source, r.function, kv, value)));
             }
-            output.add(new KV(fieldName(r, kv), value));
-
-
         }
 
         return output;
     }
+
+    private Object applyFunction(byte[] source, String function, KV kv, Object value) {
+        if (function!=null) {
+            switch (function) {
+                case "source_encoded":
+                    boolean ists = (kv.getKey() instanceof TaggedString);
+
+                    if (!ists) {
+                        throw new IllegalArgumentException("cannot obtain source from this element type to apply " + function);
+                    }
+
+                    SourcePostitionable pos = ((TaggedString) kv.getKey()).getSrc();
+                    if (pos == null) {
+                        throw new IllegalArgumentException("cannot obtain range source from this element to apply " + function);
+                    }
+                    return ItemHelper.toHexValue(source, pos);
+
+            }
+        }
+        return value;
+    }
+
 
     private String fieldName(Return r, KV kv) {
         String fieldName = r.fieldName;
@@ -293,6 +327,9 @@ public class QueryCert {
     }
 
     private String varAsFieldName(Return r) {
+        if (r.variable==null) {
+            return "";
+        }
         return r.variable.substring(1) + (r.prop != null && !r.prop.startsWith("ξ") ? "_" + r.prop : "");
     }
 
@@ -321,15 +358,15 @@ public class QueryCert {
             if (indepth || key.matches(kv)) {
 
                 if (variable != null) {
-                    vars.add(variable, kv.copyAs(path + "/" + kv.getKey()));
+                    vars.add(variable, kv.copyAs(path + "/" + kv.getMainKey()));
                 }
 
                 if (index + 1 < selectors.size()) {
                     if (kv.getValue() instanceof Item) {
-                        search(path + "/" + kv.getKey(), (Item) kv.getValue(), index + 1, selectors, list, vars);
+                        search(path + "/" + kv.getMainKey(), (Item) kv.getValue(), index + 1, selectors, list, vars);
                     }
                 } else {
-                    KV kvc = kv.copyAs(path + "/" + kv.getKey());
+                    KV kvc = kv.copyAs(path + "/" + kv.getMainKey());
                     list.add(kvc);
                 }
             }

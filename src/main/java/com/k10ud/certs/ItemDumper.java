@@ -59,7 +59,7 @@ public class ItemDumper implements IItemDumper {
     public void toString(StringBuilder prefix, StringBuilder sb, Item item) {
         List<KV> props = item.getProps();
 
-        int n = props.size();
+        int n = effectivePropSize(props, showEncodings);
         boolean isIndex = sb.length() > 0 && "]".equalsIgnoreCase(sb.substring(sb.length() - 1, sb.length()));
         if (n > 1 || !compactLines) {
             if (sb.length() > 0 && !isIndex)
@@ -69,7 +69,7 @@ public class ItemDumper implements IItemDumper {
                 sb.append(" -> ");
         }
         for (KV i : props) {
-            if (i.key.toString().startsWith("@") && !showEncodings)
+            if (i.getMainKey().startsWith("@") && !showEncodings)
                 continue;
             if (n > 1 || !compactLines) {
                 if (isIndex)
@@ -77,7 +77,8 @@ public class ItemDumper implements IItemDumper {
                 else
                     sb.append(prefix);
             }
-            dump(sb, i.key);
+
+            dump(sb, i.key,i.value==null);
             if (i.value != null) {
                 if (i.value instanceof Item) {
                     int s = ((Item) i.value).size();
@@ -90,7 +91,6 @@ public class ItemDumper implements IItemDumper {
                     }
                 } else {
                     sb.append(": ");
-
                     dump(sb, i.value, true);
 
                 }
@@ -102,8 +102,16 @@ public class ItemDumper implements IItemDumper {
             sb.append("\n");
     }
 
-    private void dump(StringBuilder sb, Object i) {
-        dump(sb, i, false);
+    private int effectivePropSize(List<KV> props, boolean showEncodings) {
+        int size = 0;
+        if (props != null) {
+            for (KV i : props) {
+                if (i.key.toString().startsWith("@") && !showEncodings)
+                    continue;
+                size++;
+            }
+        }
+        return size;
     }
 
     private void dump(StringBuilder sb, Object i, boolean bold) {
@@ -128,16 +136,23 @@ public class ItemDumper implements IItemDumper {
             } else if (i instanceof TaggedString) {
                 TaggedString ts = (TaggedString) i;
                 //  sb.append( ts.getId().getClass().getName());
-                dump(sb, ts.getId(), true);
+                dump(sb, ts.getId(), bold);
                 if (ts.tagCount() > 0) {
-                    sb.append(" (");
+                   boolean first=true;
                     for (TaggedString.Attr j : ts.tags()) {
                         String v = j.getValue();
                         String t = j.getAttr();
 
                         if (t != null) {
+                            if (t.startsWith("@")&&!showEncodings)
+                                continue;
+                            if (first) {
+                                sb.append(" (");
+                                first=false;
+                            }
                             if (!"desc".equals(t)) {
                                 if (v != null) {
+
                                     sb.append(t);
                                     sb.append(": ");
                                 } else {
@@ -148,11 +163,12 @@ public class ItemDumper implements IItemDumper {
                         }
                         if (v != null)
                             sb.append("@|underline " + v + "|@");
-
                         sb.append(", ");
                     }
-                    sb.setLength(sb.length() - 2);
-                    sb.append(")");
+                    if (!first) {
+                        sb.setLength(sb.length() - 2);
+                        sb.append(")");
+                    }
                 }
             } else {
                 bold(bold, sb, i.toString());

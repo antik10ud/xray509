@@ -23,9 +23,8 @@ package org.openmuc.jasn1.ber.types;
 import org.openmuc.jasn1.ber.*;
 
 import java.io.IOException;
-import java.io.InputStream;
 
-public class BerOctetString implements Asable, Encodedable, Decodeable {
+public class BerOctetString implements Asable, Encodedable, Decodeable, SourcePostitionable {
 
     public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
             BerIdentifier.PRIMITIVE, BerIdentifier.OCTET_STRING_TAG);
@@ -34,7 +33,7 @@ public class BerOctetString implements Asable, Encodedable, Decodeable {
     public byte[] value;
     public byte[] raw;
 
-    public long from,to;
+    public long from, to;
 
     public BerOctetString() {
         id = identifier;
@@ -61,7 +60,7 @@ public class BerOctetString implements Asable, Encodedable, Decodeable {
 
 
     public int decode(CountingInputStream is, boolean explicit) throws IOException {
-from=is.getPosition();
+        from = is.getPosition();
         int codeLength = 0;
         if (!is.markSupported())
             throw new RuntimeException("NO MARK SUPPORT");
@@ -81,7 +80,7 @@ from=is.getPosition();
                 codeLength += length.val;
             }
 
-            to=is.getPosition();
+            to = is.getPosition();
             return codeLength;
         } finally {
             is.reset();
@@ -94,7 +93,7 @@ from=is.getPosition();
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        if (value==null) {
+        if (value == null) {
             builder.append("null value");
         } else {
             for (byte element : value) {
@@ -121,5 +120,9 @@ from=is.getPosition();
     @Override
     public long getFrom() {
         return from;
+    }
+
+    public long getTo() {
+        return to;
     }
 }

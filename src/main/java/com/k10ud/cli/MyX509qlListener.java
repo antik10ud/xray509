@@ -49,7 +49,15 @@ class MyX509qlListener implements X509qlListener {
 
     private QueryCert.Return processReturnElement(X509qlParser.ReturnElementContext i) {
         QueryCert.Return x = new QueryCert.Return();
-        x.variable = i.variableName().getText();
+        if (i.literal()!=null) {
+            x.literal=unquotes(i.literal().getText());
+        } else if (i.function() != null) {
+            x.function = i.function().functionName().getText();
+            x.variable = i.function().variableName().getText();
+        } else {
+            x.variable = i.variableName().getText();
+        }
+
         if (i.fieldName != null) {
             x.fieldName = unquotes(i.fieldName.getText());
         }
@@ -164,6 +172,26 @@ class MyX509qlListener implements X509qlListener {
     }
 
     @Override
+    public void enterLiteral(X509qlParser.LiteralContext ctx) {
+
+    }
+
+    @Override
+    public void exitLiteral(X509qlParser.LiteralContext ctx) {
+
+    }
+
+    @Override
+    public void enterFunction(X509qlParser.FunctionContext ctx) {
+
+    }
+
+    @Override
+    public void exitFunction(X509qlParser.FunctionContext ctx) {
+
+    }
+
+    @Override
     public void enterReturnProp(X509qlParser.ReturnPropContext ctx) {
 
     }
@@ -196,6 +224,16 @@ class MyX509qlListener implements X509qlListener {
     }
 
     @Override
+    public void enterFuncid(X509qlParser.FuncidContext ctx) {
+
+    }
+
+    @Override
+    public void exitFuncid(X509qlParser.FuncidContext ctx) {
+
+    }
+
+    @Override
     public void enterRuid(X509qlParser.RuidContext ctx) {
 
     }
@@ -212,6 +250,16 @@ class MyX509qlListener implements X509qlListener {
 
     @Override
     public void exitVariableName(X509qlParser.VariableNameContext ctx) {
+
+    }
+
+    @Override
+    public void enterFunctionName(X509qlParser.FunctionNameContext ctx) {
+
+    }
+
+    @Override
+    public void exitFunctionName(X509qlParser.FunctionNameContext ctx) {
 
     }
 

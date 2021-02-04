@@ -278,7 +278,7 @@ public class CertificateTransparencyProc extends BaseExtensionProc {
                 sha512(6), (255)
             } HashAlgorithm;
         */
-        TaggedString t = new TaggedString(v);
+        TaggedString t = new TaggedString(String.valueOf(v));
         switch (v) {
             case 0:
                 t.addTag("none");
@@ -311,7 +311,7 @@ public class CertificateTransparencyProc extends BaseExtensionProc {
             enum { anonymous(0), rsa(1), dsa(2), ecdsa(3), (255) }
               SignatureAlgorithm;
         */
-        TaggedString t = new TaggedString(v);
+        TaggedString t = new TaggedString(String.valueOf(v));
         switch (v) {
             case 0:
                 t.addTag("anonymous");
@@ -351,7 +351,7 @@ public class CertificateTransparencyProc extends BaseExtensionProc {
     }
 
     private TaggedString version(int v) {
-        TaggedString t = new TaggedString(v);
+        TaggedString t = new TaggedString(String.valueOf(v));
         if (v == 0) {
             t.addTag("v1");
         }

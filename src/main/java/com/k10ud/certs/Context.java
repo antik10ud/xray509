@@ -76,6 +76,73 @@ public class Context {
         registerExtension("2.5.29.37", new ExtKeyUsageProc());
         registerExtension("2.5.29.15", new KeyUsageProc());
         registerExtension("2.5.29.19", new BasicConstraintsProc());
+        /*
+        TODO:
+        id-ce-nameConstraints OBJECT IDENTIFIER ::=  { id-ce 30 }
+
+      NameConstraints ::= SEQUENCE {
+           permittedSubtrees       [0]     GeneralSubtrees OPTIONAL,
+           excludedSubtrees        [1]     GeneralSubtrees OPTIONAL }
+
+      GeneralSubtrees ::= SEQUENCE SIZE (1..MAX) OF GeneralSubtree
+
+      GeneralSubtree ::= SEQUENCE {
+           base                    GeneralName,
+           minimum         [0]     BaseDistance DEFAULT 0,
+           maximum         [1]     BaseDistance OPTIONAL }
+
+      BaseDistance ::= INTEGER (0..MAX)
+
+         */
+      /*
+      TODO:
+
+   id-ce-policyConstraints OBJECT IDENTIFIER ::=  { id-ce 36 }
+
+   PolicyConstraints ::= SEQUENCE {
+        requireExplicitPolicy           [0] SkipCerts OPTIONAL,
+        inhibitPolicyMapping            [1] SkipCerts OPTIONAL }
+
+   SkipCerts ::= INTEGER (0..MAX)
+       */
+      /*
+      TODO:
+      Subject Information Access
+
+
+   id-pe-subjectInfoAccess OBJECT IDENTIFIER ::= { id-pe 11 }
+
+   SubjectInfoAccessSyntax  ::=
+           SEQUENCE SIZE (1..MAX) OF AccessDescription
+
+   AccessDescription  ::=  SEQUENCE {
+           accessMethod          OBJECT IDENTIFIER,
+           accessLocation        GeneralName  }
+
+      TODO:
+       Issuing Distribution Point
+   id-ce-issuingDistributionPoint OBJECT IDENTIFIER ::= { id-ce 28 }
+
+   issuingDistributionPoint ::= SEQUENCE {
+        distributionPoint          [0] DistributionPointName OPTIONAL,
+        onlyContainsUserCerts      [1] BOOLEAN DEFAULT FALSE,
+        onlyContainsCACerts        [2] BOOLEAN DEFAULT FALSE,
+        onlySomeReasons            [3] ReasonFlags OPTIONAL,
+        indirectCRL                [4] BOOLEAN DEFAULT FALSE,
+        onlyContainsAttributeCerts [5] BOOLEAN DEFAULT FALSE }
+
+       TODO:
+        Freshest CRL (a.k.a. Delta CRL Distribution Point)
+
+   The freshest CRL extension identifies how delta CRL information for
+   this complete CRL is obtained.  The extension MUST be non-critical.
+   This extension MUST NOT appear in delta CRLs.
+
+   id-ce-freshestCRL OBJECT IDENTIFIER ::=  { id-ce 46 }
+
+   FreshestCRL ::= CRLDistributionPoints
+
+       */
         registerExtension("2.5.29.31", new CRLDistPointsProc());
         registerExtension("1.3.6.1.5.5.7.1.1", new AIAProc());
         registerExtension("1.3.6.1.5.5.7.1.2", new BiometricInfoProc());
@@ -101,6 +168,7 @@ public class Context {
 
         registerExtension("2.23.140.3.1",new CabfOrganizationIdentifierProc());
 
+        registerExtension("1.3.6.1.5.5.7.48.1.6",new OCSPArchiveCutoffProc());
 
     }
 
@@ -307,7 +375,5 @@ public class Context {
         return trustedListByAKI.get(aki);
     }
 
-    public Object algorithm(AlgorithmIdentifier algorithm) {
-        return nameAndOid(algorithm.algorithm);
-    }
+
 }

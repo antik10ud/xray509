@@ -51,7 +51,7 @@ public class CRLReasonCodeProc extends BaseExtensionProc {
         privilegeWithdrawn      (9),
         aACompromise           (10) }
  */
-        TaggedString ts = new TaggedString(value);
+        TaggedString ts = new TaggedString(String.valueOf(value));
         switch ("" + value) {
             case "0":
                 ts.addTag("unspecified");

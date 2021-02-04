@@ -117,7 +117,7 @@ public class XrayCert {
             if (query.hasProjection()) {
                 HashMap<String, String> ctx = new HashMap<>();
                 ctx.put("ξsource", f);
-                items = query.project(items, ctx);
+                items = query.project(data, items, ctx);
                 if (items.size() == 0)
                     return;
             }

@@ -25,145 +25,142 @@
 
 package com.k10ud.asn1.x509_certificate;
 
-import java.io.IOException;
-import java.io.EOFException;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.math.BigInteger;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.io.UnsupportedEncodingException;
 import org.openmuc.jasn1.ber.*;
-import org.openmuc.jasn1.ber.types.*;
-import org.openmuc.jasn1.ber.types.string.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 
-public class DistributionPointName implements Encodedable,Decodeable,SourcePostitionable /*1*/ {
+public class DistributionPointName implements Encodedable, Decodeable, SourcePostitionable /*1*/ {
 
-public byte[] code = null; public long from,to;
-public GeneralNames fullName = null;
+    public byte[] code = null;
+    public long from, to;
+    public GeneralNames fullName = null;
 
-public RelativeDistinguishedName nameRelativeToCRLIssuer = null;
+    public RelativeDistinguishedName nameRelativeToCRLIssuer = null;
 
-public DistributionPointName() {
-}
+    public DistributionPointName() {
+    }
 
-public DistributionPointName(byte[] code) {
-this.code = code;
-}
+    public DistributionPointName(byte[] code) {
+        this.code = code;
+    }
 
-public DistributionPointName(GeneralNames fullName, RelativeDistinguishedName nameRelativeToCRLIssuer) {
-this.fullName = fullName;
-this.nameRelativeToCRLIssuer = nameRelativeToCRLIssuer;
-}
+    public DistributionPointName(GeneralNames fullName, RelativeDistinguishedName nameRelativeToCRLIssuer) {
+        this.fullName = fullName;
+        this.nameRelativeToCRLIssuer = nameRelativeToCRLIssuer;
+    }
 
-public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
-if (code != null) {
-for (int i = code.length - 1; i >= 0; i--) {
-os.write(code[i]);
-}
-return code.length;
+    public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
+        if (code != null) {
+            for (int i = code.length - 1; i >= 0; i--) {
+                os.write(code[i]);
+            }
+            return code.length;
 
-}
-int codeLength = 0;
-if (nameRelativeToCRLIssuer != null) {
-codeLength += nameRelativeToCRLIssuer.encode(os, false);
+        }
+        int codeLength = 0;
+        if (nameRelativeToCRLIssuer != null) {
+            codeLength += nameRelativeToCRLIssuer.encode(os, false);
 // write tag: CONTEXT_CLASS, CONSTRUCTED, 1
-os.write(0xa1);
-codeLength += 1;
-return codeLength;
+            os.write(0xa1);
+            codeLength += 1;
+            return codeLength;
 
-}
+        }
 
-if (fullName != null) {
-codeLength += fullName.encode(os, false);
+        if (fullName != null) {
+            codeLength += fullName.encode(os, false);
 // write tag: CONTEXT_CLASS, CONSTRUCTED, 0
-os.write(0xa0);
-codeLength += 1;
-return codeLength;
+            os.write(0xa0);
+            codeLength += 1;
+            return codeLength;
 
-}
+        }
 
-throw new IOException("Error encoding BerChoice: No item in choice was selected.");
-}
+        throw new IOException("Error encoding BerChoice: No item in choice was selected.");
+    }
 
-public int decode(long sourceOffset,byte[] bytes, BerIdentifier berIdentifier) throws IOException {
-return decode(new CountingInputStream(sourceOffset-(berIdentifier==null?0:(berIdentifier.to-berIdentifier.from)), new ByteArrayInputStream(bytes)), berIdentifier);
+    public int decode(long sourceOffset, byte[] bytes, BerIdentifier berIdentifier) throws IOException {
+        return decode(new CountingInputStream(sourceOffset - (berIdentifier == null ? 0 : (berIdentifier.to - berIdentifier.from)), new ByteArrayInputStream(bytes)), berIdentifier);
 
-}
-public int decode(CountingInputStream is, boolean explicit) throws IOException {;
+    }
 
-    return decode(is, null);
+    public int decode(CountingInputStream is, boolean explicit) throws IOException {
+        ;
 
- };
+        return decode(is, null);
 
-public int decode(CountingInputStream is, BerIdentifier berIdentifier) throws IOException {
-int codeLength = 0;
-this.from=is.getPosition()-(berIdentifier==null?0:(berIdentifier.to-berIdentifier.from));
-BerIdentifier passedIdentifier = berIdentifier;
+    }
 
-if (berIdentifier == null) {
-berIdentifier = new BerIdentifier();
-codeLength += berIdentifier.decode(is);
-}
+    ;
 
-BerLength length = new BerLength();
-if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.CONSTRUCTED, 0)) {
-fullName = new GeneralNames();
-codeLength += fullName.decode(is, false);
-this.to=is.getPosition();
-return codeLength;
-}
+    public int decode(CountingInputStream is, BerIdentifier berIdentifier) throws IOException {
+        int codeLength = 0;
+        this.from = is.getPosition() - (berIdentifier == null ? 0 : (berIdentifier.to - berIdentifier.from));
+        BerIdentifier passedIdentifier = berIdentifier;
 
-if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.CONSTRUCTED, 1)) {
-nameRelativeToCRLIssuer = new RelativeDistinguishedName();
-codeLength += nameRelativeToCRLIssuer.decode(is, false);
-this.to=is.getPosition();
-return codeLength;
-}
+        if (berIdentifier == null) {
+            berIdentifier = new BerIdentifier();
+            codeLength += berIdentifier.decode(is);
+        }
 
-if (passedIdentifier != null) {
-this.to=is.getPosition();
-return 0;
-}
-this.to=is.getPosition();
-throw new IOException("Error decoding BerChoice: Identifier matched to no item.");
-}
+        BerLength length = new BerLength();
+        if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.CONSTRUCTED, 0)) {
+            fullName = new GeneralNames();
+            codeLength += fullName.decode(is, false);
+            this.to = is.getPosition();
+            return codeLength;
+        }
 
-public void encodeAndSave(int encodingSizeGuess) throws IOException {
-BerByteArrayOutputStream os = new BerByteArrayOutputStream(encodingSizeGuess);
-encode(os, false);
-code = os.getArray();
-}
+        if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.CONSTRUCTED, 1)) {
+            nameRelativeToCRLIssuer = new RelativeDistinguishedName();
+            codeLength += nameRelativeToCRLIssuer.decode(is, false);
+            this.to = is.getPosition();
+            return codeLength;
+        }
 
-public String toString() {
-if ( fullName!= null) {
-return "CHOICE{fullName: " + fullName + "}";
-}
+        if (passedIdentifier != null) {
+            this.to = is.getPosition();
+            return 0;
+        }
+        this.to = is.getPosition();
+        throw new IOException("Error decoding BerChoice: Identifier matched to no item.");
+    }
 
-if ( nameRelativeToCRLIssuer!= null) {
-return "CHOICE{nameRelativeToCRLIssuer: " + nameRelativeToCRLIssuer + "}";
-}
+    public void encodeAndSave(int encodingSizeGuess) throws IOException {
+        BerByteArrayOutputStream os = new BerByteArrayOutputStream(encodingSizeGuess);
+        encode(os, false);
+        code = os.getArray();
+    }
 
-return "unknown";
-}
+    public String toString() {
+        if (fullName != null) {
+            return "CHOICE{fullName: " + fullName + "}";
+        }
 
-@Override
+        if (nameRelativeToCRLIssuer != null) {
+            return "CHOICE{nameRelativeToCRLIssuer: " + nameRelativeToCRLIssuer + "}";
+        }
 
- public long getFrom() {
+        return "unknown";
+    }
 
-     return from;
+    @Override
 
-}
+    public long getFrom() {
 
-@Override
+        return from;
 
-public long getTo() {
+    }
 
-    return to;
+    @Override
 
-}
+    public long getTo() {
+
+        return to;
+
+    }
 
 }
 

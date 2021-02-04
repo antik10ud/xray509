@@ -26,6 +26,7 @@ import com.k10ud.asn1.x509_certificate.Extension;
 import com.k10ud.asn1.x509_certificate.SubjectDirectoryAttributes;
 import com.k10ud.certs.Context;
 import com.k10ud.certs.Item;
+import com.k10ud.certs.util.ItemHelper;
 
 import java.io.IOException;
 import java.util.List;
@@ -42,7 +43,7 @@ public class SubjectDirAttrProc extends BaseExtensionProc {
         if (sda.seqOf != null)
             for (int i1 = 0; i1 < seqOf.size(); i1++) {
                 Attribute i = seqOf.get(i1);
-                out.prop(i1, ap.parse(i));
+                out.prop(ItemHelper.index(i1), ap.parse(i));
             }
         return out;
     }

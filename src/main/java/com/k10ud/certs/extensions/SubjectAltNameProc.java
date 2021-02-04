@@ -37,14 +37,12 @@ public class SubjectAltNameProc extends BaseExtensionProc {
     public Item processContent(Context ctx, Extension e) throws IOException {
         Item out = new Item();
         SubjectAltName san = new SubjectAltName();
-        san.decode(e.extnValue.from,e.extnValue.value, true);
+        san.decode(e.extnValue.from, e.extnValue.value, true);
         List<GeneralName> seqOf = san.seqOf;
         if (seqOf != null)
             for (int i1 = 0; i1 < seqOf.size(); i1++) {
                 GeneralName i = seqOf.get(i1);
-                i.encodeAndSave(1024);
-                out.prop("@encoded",i.code);
-                out.prop(ItemHelper.index( i1), ItemHelper.generalName(ctx, i));
+                out.transfer(ItemHelper.generalName(ctx, i,i1));
             }
         return out;
     }

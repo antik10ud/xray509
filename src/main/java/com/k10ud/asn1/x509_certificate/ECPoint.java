@@ -39,7 +39,7 @@ import org.openmuc.jasn1.ber.types.*;
 import org.openmuc.jasn1.ber.types.string.*;
 
 
-public class ECPoint extends BerOctetString /*4*/{
+public class ECPoint extends BerOctetString implements  SourcePostitionable/*4*/{
 
 public ECPoint() {
 }

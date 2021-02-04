@@ -31,17 +31,20 @@ public abstract class BaseExtensionProc implements ExtensionProc {
     public Item process(Context ctx, Extension e) {
         if (e == null)
             return null;
-        TaggedString st = ctx.nameAndOid(e.extnID);
+      //  TaggedString st = ctx.nameAndOid(e.extnID);
         boolean critical = e.critical != null && e.critical.value;
-        if (critical)
-            st.addTag("critical");
         try {
             Item inner = processContent(ctx, e);
-            return new Item(st, inner);
+            Item out=new Item();
+            if (critical) {
+                out.prop("Critical");
+            }
+            out.transfer(inner);
+            return out;
         } catch (Exception x) {
             Item out = new Item();
             out.prop("Raw Value", e.extnValue);
-            return new Item(st, out);
+            return out;
         }
     }
 

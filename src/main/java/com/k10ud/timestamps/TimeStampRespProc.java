@@ -140,7 +140,8 @@ public class TimeStampRespProc {
         } catch (ArithmeticException x) {
             //unknown code
         }
-        i.prop(status.getPositiveValue(), name);
+        i.prop("value",status.getPositiveValue());
+        i.prop("desc", name);
         return i;
     }
 

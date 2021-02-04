@@ -49,7 +49,7 @@ public class AIAProc extends BaseExtensionProc {
         List<AccessDescription> seqOf = aia.seqOf;
         for (int i = 0; i < seqOf.size(); i++) {
             AccessDescription ad = seqOf.get(i);
-            out.prop("AccessDescription[" + i + "]", accessDescription(ctx, ad));
+            out.prop(ItemHelper.index(i,"AccessDescription"), accessDescription(ctx, ad));
         }
         return out;
     }

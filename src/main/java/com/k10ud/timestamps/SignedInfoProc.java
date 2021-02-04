@@ -114,7 +114,7 @@ public class SignedInfoProc {
             default:
                 out = new AttrProc(context).parse(a);
         }
-        return new Item(context.nameAndOid(a.attrType), out);
+        return ItemHelper.withOID(context,a.attrType, out);
     }
 
     private Item cmsapa(Attribute a) {
@@ -238,8 +238,10 @@ public class SignedInfoProc {
                     item.prop("policyIdentifier", context.nameAndOid(id.policyIdentifier));
                 if (id.policyQualifiers != null) {
                     Item pq = new Item();
-                    for (PolicyQualifierInfo info : id.policyQualifiers.seqOf) {
-                        pq.prop(context.nameAndOid(info.policyQualifierId), info.qualifier.value);
+                    List<PolicyQualifierInfo> seqOf = id.policyQualifiers.seqOf;
+                    for (int i = 0; i < seqOf.size(); i++) {
+                        PolicyQualifierInfo info = seqOf.get(i);
+                        pq.prop(ItemHelper.index(i), ItemHelper.withOID(context,info.policyQualifierId, info.qualifier.value));
                     }
                     item.prop("policyQualifiers", pq);
                 }

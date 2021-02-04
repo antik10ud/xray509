@@ -24,8 +24,11 @@ package com.k10ud.certs.util;
 import com.k10ud.asn1.x509_certificate.*;
 import com.k10ud.certs.Context;
 import com.k10ud.certs.Item;
+import com.k10ud.certs.KeyDumper;
 import com.k10ud.certs.TaggedString;
+import org.openmuc.jasn1.ber.SourcePostitionable;
 import org.openmuc.jasn1.ber.types.BerGeneralizedTime;
+import org.openmuc.jasn1.ber.types.BerObjectIdentifier;
 import org.openmuc.jasn1.ber.types.BerOctetString;
 import org.openmuc.jasn1.ber.types.string.BerBMPString;
 import org.openmuc.jasn1.ber.types.string.BerIA5String;
@@ -37,9 +40,12 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class ItemHelper {
+    public static final String RANGEREF = "@rangeref";
+
     public static Item generalNames(Context ctx, GeneralNames gns) {
         if (gns == null || gns.seqOf.size() == 0)
             return Item.EMPTY;
@@ -47,45 +53,52 @@ public class ItemHelper {
         List<GeneralName> seqOf = gns.seqOf;
         for (int i = 0; i < seqOf.size(); i++) {
             GeneralName gn = seqOf.get(i);
-            o.prop(ItemHelper.index(i), generalName(ctx, gn));
+            o.prop(ItemHelper.index(i), generalName(ctx, gn, null));
         }
         return o;
     }
 
-    public static Object generalName(Context ctx, GeneralName gn) {
+    public static Item generalName(Context ctx, GeneralName gn) {
+        return generalName(ctx, gn, null);
+    }
+
+    public static Item generalName(Context ctx, GeneralName gn, Integer index) {
+
         if (gn == null)
             return Item.EMPTY;
+
+
         if (gn.directoryName != null) {
            /* Item list = new Item();
             gn.directoryName.rdnSequence.seqOf.forEach(i ->
                     i.seqOf.forEach(j ->
                             list.prop(ctx.nameAndOid(j.type), ds(j))
                     ));*/
-            return new Item("directoryName", name(ctx,gn.directoryName));
+            return new Item(new TaggedString("directoryName").addIndexTag(index), name(ctx, gn.directoryName));
         }
         if (gn.uniformResourceIdentifier != null) {
-            return new Item("uniformResourceIdentifier",new TaggedString(gn.uniformResourceIdentifier).addTag("type", "IA5String"));
+            return new Item(new TaggedString("uri").addIndexTag(index), new TaggedString(String.valueOf(gn.uniformResourceIdentifier)).addTag("type", "IA5String"));
         }
         if (gn.dNSName != null) {
-            return new Item("DNSName", new TaggedString(gn.dNSName).addTag("type", "IA5String"));
+            return new Item(new TaggedString("DNSName").addIndexTag(index), new TaggedString(String.valueOf(gn.dNSName)).addTag("type", "IA5String"));
         }
         if (gn.ediPartyName != null) {
-            return  new Item("ediPartyName", gn.ediPartyName);
+            return new Item(new TaggedString("ediPartyName").addIndexTag(index), gn.ediPartyName);
         }
         if (gn.iPAddress != null) {
-            return  new Item("IPAddress",new TaggedString(ipAddress(gn.iPAddress)).addTag("type", "OctetString"));
+            return new Item(new TaggedString("IPAddress").addIndexTag(index), new TaggedString(String.valueOf(ipAddress(gn.iPAddress))).addTag("type", "OctetString"));
         }
         if (gn.otherName != null) {
-            return new Item("otherName",  gn.otherName);
+            return new Item(new TaggedString("otherName").addIndexTag(index), gn.otherName);
         }
         if (gn.rfc822Name != null) {
-            return  new Item("rfc822Name", new TaggedString(gn.rfc822Name).addTag("type", "IA5String"));
+            return new Item(new TaggedString("rfc822Name").addIndexTag(index), new TaggedString(String.valueOf(gn.rfc822Name)).addTag("type", "IA5String"));
         }
         if (gn.x400Address != null) {
-            return new Item("x400Address", gn.x400Address);
+            return new Item(new TaggedString("x400Address").addIndexTag(index), gn.x400Address);
         }
 
-        return gn;
+        return new Item(new TaggedString("unknown").addIndexTag(index), gn);
     }
 
     public static Object ipAddress(BerOctetString iPAddress) {
@@ -122,12 +135,13 @@ public class ItemHelper {
         return iPAddress;
     }
 
-    public static Item relativeDistinguishedName(Context ctx, RelativeDistinguishedName i) {
+    public static Item relativeDistinguishedName(Context ctx, RelativeDistinguishedName i, Integer index) {
         if (i == null)
             return Item.EMPTY;
         Item out = new Item();
-        for (AttributeTypeAndValue j : i.seqOf)
-            out.prop(ctx.nameAndOid(j.type), ds(j));
+        for (AttributeTypeAndValue j : i.seqOf) {
+            out.prop(ctx.nameAndOid(j.type).addIndexTag(index), ds(j));
+        }
         return out;
     }
 
@@ -139,19 +153,19 @@ public class ItemHelper {
         try {
 
             DirectoryString ds = new DirectoryString();
-            ds.decode(j.value.from,j.value.encoded(), null);
+            ds.decode(j.value.from, j.value.encoded(), null);
             if (ds.bmpString != null)
                 return new TaggedString(
                         bmpString(
                                 ds.bmpString)).addTag("type", "bmpString");
             else if (ds.printableString != null)
-                return new TaggedString(ds.printableString).addTag("type", "printableString");
+                return new TaggedString(String.valueOf(ds.printableString)).addTag("type", "printableString");
             else if (ds.teletexString != null)
-                return new TaggedString(ds.teletexString).addTag("type", "teletexString");
+                return new TaggedString(String.valueOf(ds.teletexString)).addTag("type", "teletexString");
             else if (ds.universalString != null)
-                return new TaggedString(ds.universalString).addTag("type", "universalString");
+                return new TaggedString(String.valueOf(ds.universalString)).addTag("type", "universalString");
             else if (ds.utf8String != null)
-                return new TaggedString(ds.utf8String).addTag("type", "utf8String");
+                return new TaggedString(String.valueOf(ds.utf8String)).addTag("type", "utf8String");
 
             return ds;
         } catch (IOException e) {
@@ -159,7 +173,7 @@ public class ItemHelper {
         }
         try {
             BerIA5String ds = new BerIA5String();
-            ds.decode(j.value.from,j.value.value, true);
+            ds.decode(j.value.from, j.value.value, true);
             return new TaggedString(ds.toString()).addTag("type", "IA5String");
         } catch (IOException e) {
             //cannot decode as BerIA5String
@@ -174,11 +188,11 @@ public class ItemHelper {
         if (text.bmpString != null)
             return new TaggedString(bmpString(text.bmpString)).addTag("type", "bmpString");
         else if (text.ia5String != null)
-            return new TaggedString(text.ia5String).addTag("type", "ia5String");
+            return new TaggedString(String.valueOf(text.ia5String)).addTag("type", "ia5String");
         else if (text.visibleString != null)
-            return new TaggedString(text.visibleString).addTag("type", "visibleString");
+            return new TaggedString(String.valueOf(text.visibleString)).addTag("type", "visibleString");
         else if (text.utf8String != null)
-            return new TaggedString(text.utf8String).addTag("type", "utf8String");
+            return new TaggedString(String.valueOf(text.utf8String)).addTag("type", "utf8String");
         return text;
     }
 
@@ -187,8 +201,6 @@ public class ItemHelper {
         ZonedDateTime d1 = ASN1Helper.time(notAfter);
         return validity(d0, d1, notBefore, notAfter);
     }
-
-
 
 
     public static Item validity(Time notBefore, Time notAfter) {
@@ -201,16 +213,19 @@ public class ItemHelper {
     private static final int MINUTES_PER_HOUR = 60;
     private static final int SECONDS_PER_MINUTE = 60;
     private static final int SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR;
-    private final static  ZonedDateTime NO_WELL_DEFINED_EXPIRATION=ZonedDateTime.of(9999,12,31,23,59,59,0, ZoneId.of("Z"));
+    private final static ZonedDateTime NO_WELL_DEFINED_EXPIRATION = ZonedDateTime.of(9999, 12, 31, 23, 59, 59, 0, ZoneId.of("Z"));
 
-    public static Item validity(ZonedDateTime dd0, ZonedDateTime dd1, Object notBefore, Object notAfter) {
-        //  LocalDateTime dd0 = d0 == null ? null : LocalDateTime.from(d0.toInstant().atOffset(ZoneOffset.UTC));
-        //  LocalDateTime dd1 = d1 == null ? null : LocalDateTime.from(d1.toInstant().atOffset(ZoneOffset.UTC));
-        //System.out.println(dd1);
-        boolean nwde=NO_WELL_DEFINED_EXPIRATION.compareTo(dd1)==0;
 
-        Item out = new Item();
-        if (dd0 != null & dd1 != null && !nwde) {
+
+    public static String duration(BerGeneralizedTime notBefore, BerGeneralizedTime notAfter) {
+        ZonedDateTime dd0 = ASN1Helper.time(notBefore);
+        ZonedDateTime dd1 = ASN1Helper.time(notAfter);
+        return duration(dd0,dd1);
+    }
+
+
+    public static String duration(ZonedDateTime dd0, ZonedDateTime dd1) {
+        if (dd0 != null & dd1 != null) {
             Period p = Period.between(dd0.toLocalDate(), dd1.toLocalDate());
 
             StringBuilder sb = new StringBuilder();
@@ -238,14 +253,28 @@ public class ItemHelper {
             if (sb.length() == 0)
                 sb.append(" 0");
 
-            out.prop(new TaggedString("Duration").addTag("synthetic"), sb.substring(1));
+            return sb.substring(1);
+        }
+        return "undefined";
+    }
+
+
+    public static Item validity(ZonedDateTime dd0, ZonedDateTime dd1, Object notBefore, Object notAfter) {
+        //  LocalDateTime dd0 = d0 == null ? null : LocalDateTime.from(d0.toInstant().atOffset(ZoneOffset.UTC));
+        //  LocalDateTime dd1 = d1 == null ? null : LocalDateTime.from(d1.toInstant().atOffset(ZoneOffset.UTC));
+        //System.out.println(dd1);
+        boolean nwde = NO_WELL_DEFINED_EXPIRATION.compareTo(dd1) == 0;
+
+        Item out = new Item();
+        if (dd0 != null & dd1 != null && !nwde) {
+            out.prop("Duration", duration(dd0,dd1));
         }
         out.prop("NotBefore", dd0 != null ? dd0 : notBefore);
-        TaggedString dd1t=new TaggedString((dd1 != null ? dd1 : notAfter));
+        TaggedString dd1t = new TaggedString(String.valueOf((dd1 != null ? dd1 : notAfter)));
         if (nwde) {
-            dd1t.addTag( "No Well Defined Expiration");
+            dd1t.addTag("No Well Defined Expiration");
         }
-        out.prop("NotAfter",dd1t);
+        out.prop("NotAfter", dd1t);
         return out;
     }
 
@@ -260,7 +289,7 @@ public class ItemHelper {
         List<RelativeDistinguishedName> seqOf = name.rdnSequence.seqOf;
         for (int i1 = 0; i1 < seqOf.size(); i1++) {
             RelativeDistinguishedName i = seqOf.get(i1);
-            out.prop(ItemHelper.index(i1), ItemHelper.relativeDistinguishedName(ctx, i));
+            out.transfer(ItemHelper.relativeDistinguishedName(ctx, i, i1));
         }
         return out;
     }
@@ -296,15 +325,23 @@ public class ItemHelper {
 
     public static Item extensions(Context context, Extensions extensions) {
         Item out = new Item();
-        int k = 0;
-        for (Extension e : extensions.seqOf)
-            out.prop(ItemHelper.index((k++)), extension(context, e));
+        List<Extension> seqOf = extensions.seqOf;
+        for (int i = 0; i < seqOf.size(); i++) {
+            Extension e = seqOf.get(i);
+            out.transfer(extension(context, e, i));
+        }
         return out;
     }
 
-    public static Item extension(Context context, Extension extension) {
+    ;
+
+    public static Item extension(Context context, Extension extension, Integer index) {
         String oid = extension.extnID.toString();
-        Item item = context.extensionProcessor(oid).process(context, extension);
+        Item item = new Item();
+   /*     item.prop("OID", context.nameAndOid(oid));
+        item.transfer( context.extensionProcessor(oid).process(context, extension));*/
+        item.prop(context.nameAndOid(oid).addIndexTag(index), context.extensionProcessor(oid).process(context, extension));
+
         return item;
     }
 
@@ -330,8 +367,8 @@ public class ItemHelper {
         return null;
     }
 
-    public static String index(int k, String name) {
-        return name + index(k);
+    public static TaggedString index(int k, String name) {
+        return new TaggedString(name).addIndexTag(k);
     }
 
 
@@ -375,5 +412,29 @@ public class ItemHelper {
 
         return sb.toString();
 
+    }
+
+    public static Item list(Iterator<String> it) {
+        Item o = new Item();
+        int i = 0;
+        while (it.hasNext()) {
+            o.prop(index(i), it.next());
+            i++;
+        }
+        return o;
+    }
+
+
+    public static Item withOID(Context ctx, BerObjectIdentifier a, Object out) {
+        return new Item(a.toString(), new Item("value", out).prop("desc", ctx.oidName(a.toString())));
+    }
+
+    public static void addWithOID(Context ctx, Item out, BerObjectIdentifier berObjectIdentifier) {
+        out.prop(berObjectIdentifier.toString(), ctx.oidName(berObjectIdentifier.toString()));
+
+    }
+
+    public static String toHexValue(byte[] source, SourcePostitionable pos) {
+        return KeyDumper.toHex(Arrays.copyOfRange(source, (int) pos.getFrom(), (int) pos.getTo()));//!!
     }
 }

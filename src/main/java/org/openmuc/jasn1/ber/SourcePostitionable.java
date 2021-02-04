@@ -26,4 +26,7 @@ public interface SourcePostitionable {
    long  getFrom();
    long  getTo();
 
+    default long getFromImplicit()  {
+        return getFrom();
+    }
 }

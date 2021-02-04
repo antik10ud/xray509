@@ -101,6 +101,9 @@ public class KeyDumper implements IItemDumper {
     public void map(String prefix, Map<String, Object> map, Item item) {
         for (KV i : item.getProps()) {
             String newprefix = appendPrefix(prefix, keyName(prefix, map, i.key));
+            if (i.key instanceof TaggedString) {
+                mapAttrs(newprefix, map, (TaggedString)i.key);
+            }
             if (i.value != null) {
                 if (i.value instanceof Item && ((Item) i.value).size() > 0) {
                     map(newprefix, map, (Item) i.value);
@@ -113,11 +116,28 @@ public class KeyDumper implements IItemDumper {
         }
     }
 
+    private void mapAttrs(String prefix, Map<String, Object> map, TaggedString key) {
+                 for (TaggedString.Attr j : key.tags()) {
+                    String v = j.getValue();
+                    String t = j.getAttr();
+                    if (!t.equalsIgnoreCase("@index")) {
+                       map.put(prefix+"/"+t,v);
+                    }
+                }
+            }
+
     private String keyName(String prefix, Map<String, Object> map, Object key) {
         if (key instanceof TaggedString) {
             TaggedString ts = (TaggedString) key;
             String k = String.valueOf(ts.getId());
             String basePrefix = appendPrefix(prefix, k);
+            for (TaggedString.Attr j : ts.tags()) {
+                String v = j.getValue();
+                String t = j.getAttr();
+                if (t.equalsIgnoreCase("@index")) {
+                    return ts.getId()+"["+v+"]";
+                }
+                 }
          /*  for (TaggedString.Attr j : ts.tags()) {
                 String v = j.getValue();
                 String t = j.getAttr();

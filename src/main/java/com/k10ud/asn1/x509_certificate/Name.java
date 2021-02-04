@@ -25,119 +25,116 @@
 
 package com.k10ud.asn1.x509_certificate;
 
-import java.io.IOException;
-import java.io.EOFException;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.math.BigInteger;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.io.UnsupportedEncodingException;
 import org.openmuc.jasn1.ber.*;
-import org.openmuc.jasn1.ber.types.*;
-import org.openmuc.jasn1.ber.types.string.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 
-public class Name implements Encodedable,Decodeable,SourcePostitionable /*1*/ {
+public class Name implements Encodedable, Decodeable, SourcePostitionable /*1*/ {
 
-public byte[] code = null; public long from,to;
-public RDNSequence rdnSequence = null;
+    public byte[] code = null;
+    public long from, to;
+    public RDNSequence rdnSequence = null;
 
-public Name() {
-}
+    public Name() {
+    }
 
-public Name(byte[] code) {
-this.code = code;
-}
+    public Name(byte[] code) {
+        this.code = code;
+    }
 
-public Name(RDNSequence rdnSequence) {
-this.rdnSequence = rdnSequence;
-}
+    public Name(RDNSequence rdnSequence) {
+        this.rdnSequence = rdnSequence;
+    }
 
-public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
-if (code != null) {
-for (int i = code.length - 1; i >= 0; i--) {
-os.write(code[i]);
-}
-return code.length;
+    public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
+        if (code != null) {
+            for (int i = code.length - 1; i >= 0; i--) {
+                os.write(code[i]);
+            }
+            return code.length;
 
-}
-int codeLength = 0;
-if (rdnSequence != null) {
-codeLength += rdnSequence.encode(os, true);
-return codeLength;
+        }
+        int codeLength = 0;
+        if (rdnSequence != null) {
+            codeLength += rdnSequence.encode(os, true);
+            return codeLength;
 
-}
+        }
 
-throw new IOException("Error encoding BerChoice: No item in choice was selected.");
-}
+        throw new IOException("Error encoding BerChoice: No item in choice was selected.");
+    }
 
-public int decode(long sourceOffset,byte[] bytes, BerIdentifier berIdentifier) throws IOException {
-return decode(new CountingInputStream(sourceOffset-(berIdentifier==null?0:(berIdentifier.to-berIdentifier.from)), new ByteArrayInputStream(bytes)), berIdentifier);
+    public int decode(long sourceOffset, byte[] bytes, BerIdentifier berIdentifier) throws IOException {
+        return decode(new CountingInputStream(sourceOffset - (berIdentifier == null ? 0 : (berIdentifier.to - berIdentifier.from)), new ByteArrayInputStream(bytes)), berIdentifier);
 
-}
-public int decode(CountingInputStream is, boolean explicit) throws IOException {;
+    }
 
-    return decode(is, null);
+    public int decode(CountingInputStream is, boolean explicit) throws IOException {
+        ;
 
- };
+        return decode(is, null);
 
-public int decode(CountingInputStream is, BerIdentifier berIdentifier) throws IOException {
-int codeLength = 0;
-this.from=is.getPosition()-(berIdentifier==null?0:(berIdentifier.to-berIdentifier.from));
-BerIdentifier passedIdentifier = berIdentifier;
+    }
 
-if (berIdentifier == null) {
-berIdentifier = new BerIdentifier();
-codeLength += berIdentifier.decode(is);
-}
+    ;
 
-BerLength length = new BerLength();
-if (berIdentifier.equals(RDNSequence.identifier)) {
-rdnSequence = new RDNSequence();
-codeLength += rdnSequence.decode(is, false);
-this.to=is.getPosition();
-return codeLength;
-}
+    public int decode(CountingInputStream is, BerIdentifier berIdentifier) throws IOException {
+        int codeLength = 0;
+        this.from = is.getPosition() - (berIdentifier == null ? 0 : (berIdentifier.to - berIdentifier.from));
+        BerIdentifier passedIdentifier = berIdentifier;
 
-if (passedIdentifier != null) {
-this.to=is.getPosition();
-return 0;
-}
-this.to=is.getPosition();
-throw new IOException("Error decoding BerChoice: Identifier matched to no item.");
-}
+        if (berIdentifier == null) {
+            berIdentifier = new BerIdentifier();
+            codeLength += berIdentifier.decode(is);
+        }
 
-public void encodeAndSave(int encodingSizeGuess) throws IOException {
-BerByteArrayOutputStream os = new BerByteArrayOutputStream(encodingSizeGuess);
-encode(os, false);
-code = os.getArray();
-}
+        BerLength length = new BerLength();
+        if (berIdentifier.equals(RDNSequence.identifier)) {
+            rdnSequence = new RDNSequence();
+            codeLength += rdnSequence.decode(is, false);
+            this.to = is.getPosition();
+            return codeLength;
+        }
 
-public String toString() {
-if ( rdnSequence!= null) {
-return "CHOICE{rdnSequence: " + rdnSequence + "}";
-}
+        if (passedIdentifier != null) {
+            this.to = is.getPosition();
+            return 0;
+        }
+        this.to = is.getPosition();
+        throw new IOException("Error decoding BerChoice: Identifier matched to no item.");
+    }
 
-return "unknown";
-}
+    public void encodeAndSave(int encodingSizeGuess) throws IOException {
+        BerByteArrayOutputStream os = new BerByteArrayOutputStream(encodingSizeGuess);
+        encode(os, false);
+        code = os.getArray();
+    }
 
-@Override
+    public String toString() {
+        if (rdnSequence != null) {
+            return "CHOICE{rdnSequence: " + rdnSequence + "}";
+        }
 
- public long getFrom() {
+        return "unknown";
+    }
 
-     return from;
+    @Override
 
-}
+    public long getFrom() {
 
-@Override
+        return from;
 
-public long getTo() {
+    }
 
-    return to;
+    @Override
 
-}
+    public long getTo() {
+
+        return to;
+
+    }
 
 }
 

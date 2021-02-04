@@ -84,7 +84,7 @@ public class XrayCRLIt {
 
                 }
                 QueryableMap map = new QueryableMap(items);
-                List<String> crlURLs = map.q("Extensions/*/2.5.29.31/DistributionPoint[*]/*/uniformResourceIdentifier=(*)");
+                List<String> crlURLs = map.q("Extensions/2.5.29.31[*]/DistributionPoint[*]/*/uri=(*)");
                 for (String i : crlURLs)
                     if (crlProc(run, context, i, true) && !app.processAll) return run;
             }

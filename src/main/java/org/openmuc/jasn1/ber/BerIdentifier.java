@@ -22,7 +22,6 @@ package org.openmuc.jasn1.ber;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 
 public class BerIdentifier {
 
@@ -57,7 +56,7 @@ public class BerIdentifier {
     public static final int BMP_STRING_TAG = 30;
 
     public byte[] identifier = null;
-    public long from,to;
+    public long from, to;
     public int identifierClass;
     public int primitive;
     public int tagNumber;
@@ -76,8 +75,7 @@ public class BerIdentifier {
         if (tagNumber < 31) {
             identifier = new byte[1];
             identifier[0] = (byte) (identifierClass | primitive | tagNumber);
-        }
-        else {
+        } else {
             int tagLength = 1;
             while (tagNumber > (Math.pow(2, (7 * tagLength)) - 1)) {
                 tagLength++;
@@ -103,7 +101,7 @@ public class BerIdentifier {
     }
 
     public int decode(CountingInputStream is) throws IOException {
-        from=is.getPosition();
+        from = is.getPosition();
         int nextByte = is.read();
         if (nextByte == -1) {
             throw new EOFException("Unexpected end of input stream.");
@@ -136,36 +134,34 @@ public class BerIdentifier {
             } while ((nextByte & 0x80) == 0x80);
 
         }
-code();
-        to=is.getPosition();
+        code();
+        to = is.getPosition();
         return codeLength;
     }
 
     /**
      * Decodes the Identifier from the ByteArrayInputStream and throws an Exception if it is not equal to itself.
      * Returns the number of bytes read from the InputStream.
-     * 
-     * @param is
-     *            the input stream to read the identifier from.
+     *
+     * @param is the input stream to read the identifier from.
      * @return the length of the identifier read.
-     * @throws IOException
-     *             if an exception occurs reading the identifier from the stream.
+     * @throws IOException if an exception occurs reading the identifier from the stream.
      */
     public int decodeAndCheck(CountingInputStream is) throws IOException {
-from=is.getPosition();
+        from = is.getPosition();
         for (Byte identifierByte : identifier) {
             int nextByte = is.read();
             if (nextByte == -1) {
-                to=is.getPosition();
+                to = is.getPosition();
                 throw new EOFException("Unexpected end of input stream.");
             }
 
             if (nextByte != (identifierByte & 0xff)) {
-                to=is.getPosition();
+                to = is.getPosition();
                 throw new IOException("Identifier does not match!");
             }
         }
-        to=is.getPosition();
+        to = is.getPosition();
         return identifier.length;
     }
 

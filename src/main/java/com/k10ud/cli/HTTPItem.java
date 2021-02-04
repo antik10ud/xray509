@@ -23,6 +23,7 @@ package com.k10ud.cli;
 
 import com.k10ud.certs.IOUtil;
 import com.k10ud.certs.Item;
+import com.k10ud.certs.util.ItemHelper;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -55,6 +56,12 @@ public class HTTPItem {
                 out.write(query);
                 out.flush();
             }
+
+
+            //dup code
+            Item headers = new Item();
+            con.getHeaderFields().forEach((k, v) -> headers.prop(k, ItemHelper.list(v.iterator())));
+            i.prop("Response Headers", headers);
 
             i.prop("ResponseCode", con.getResponseCode());
 
@@ -97,6 +104,11 @@ public class HTTPItem {
             con.setDoOutput(true);
             con.setDoInput(true);
             con.setRequestMethod("GET");
+
+            Item headers = new Item();
+            con.getHeaderFields().forEach((k, v) -> headers.prop(k, ItemHelper.list(v.iterator())));
+            i.prop("Response Headers", headers);
+
 
             i.prop("ResponseCode", con.getResponseCode());
 

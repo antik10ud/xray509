@@ -21,56 +21,32 @@
 
 package com.k10ud.certs.extensions;
 
-
+import com.k10ud.asn1.x509_certificate.Extension;
+import com.k10ud.certs.Context;
 import com.k10ud.certs.Item;
-import com.k10ud.certs.TaggedString;
-import org.openmuc.jasn1.ber.types.BerBitString;
+import com.k10ud.certs.util.ItemHelper;
+import org.openmuc.jasn1.ber.types.BerGeneralizedTime;
 
-public class Flags {
+import java.io.IOException;
 
-    public static class Bit {
-        private final int bit;
-        private final String name;
+public class OCSPArchiveCutoffProc extends BaseExtensionProc {
 
-        public Bit(int bit, String name) {
-            this.bit = bit;
-            this.name = name;
+    @Override
+    public Item processContent(Context ctx, Extension ext) throws IOException {
+        Item out = new Item();
+        if (ext.extnValue.value != null) {
+            BerGeneralizedTime time = new BerGeneralizedTime();
+            try {
+                time.decode(ext.extnValue.from,ext.extnValue.value, true);
+            } catch (IOException e) {
+                out.prop("Unable to process data as BerGeneralizedTime", e);
+                out.prop("Raw Value", ext.extnValue);
+                return out;
+            }
+            out.prop("Value", ItemHelper.generalizedTime(time));
         }
-
-        public boolean in(byte[] value) {
-            int idx = bit / 8;
-            if (idx >= value.length)
-                return false;
-            return (value[idx] & 255 & 128 >> bit % 8) == 128 >> bit % 8;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public int getBit() {
-            return bit;
-        }
+        return out;
     }
 
-    private final Bit[] bits;
-
-    public Item in(BerBitString bitString) {
-        if (bitString == null)
-            return Item.EMPTY;
-        Item flags = new Item();
-        byte[] v = bitString.value;
-        if (v != null)
-            for (Bit i : bits)
-                if (i.in(v))
-                    flags.prop(new TaggedString(String.valueOf(i.bit)).addTag(i.getName()));
-
-        return flags;
-    }
-
-
-    public Flags(Bit... bits) {
-        this.bits = bits;
-    }
 
 }
