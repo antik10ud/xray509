@@ -21,7 +21,6 @@
 
 package com.k10ud.certs;
 
-import com.k10ud.asn1.x509_certificate.AlgorithmIdentifier;
 import com.k10ud.certs.extensions.*;
 import com.k10ud.certs.util.ASN1Helper;
 import com.k10ud.certs.util.Base64;
@@ -169,6 +168,10 @@ public class Context {
         registerExtension("2.23.140.3.1",new CabfOrganizationIdentifierProc());
 
         registerExtension("1.3.6.1.5.5.7.48.1.6",new OCSPArchiveCutoffProc());
+
+
+        registerExtension("1.3.6.1.4.1.47281.555.1.1",new DCRLProc());
+
 
     }
 

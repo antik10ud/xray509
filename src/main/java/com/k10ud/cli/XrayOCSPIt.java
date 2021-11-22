@@ -50,6 +50,11 @@ import static picocli.CommandLine.*;
 
 public class XrayOCSPIt {
 
+    @Command(name = "xray-ocsp",
+            header = "xray-ocs 0.0.1",
+            showDefaultValues = true,
+            description = "x509 certificate ocsp check"
+    )
     public static class Args extends CommonArgs {
 
         @Option(names = {"-o", "--output-filename-base"}, description = "OCSP file output base (it'll generate .ors and .orq files if specified)")
@@ -86,7 +91,7 @@ public class XrayOCSPIt {
         public boolean useGet;
 
 
-        @Option(names = {"--cert"}, description = "Issuer certificate, we'll try to obtain it from AIA when not specified")
+        @Option(names = {"--cert"}, description = "Certificate to check")
         public String cert;
 
         @Option(names = {"--serial"}, description = "Serial of certificate to check")
@@ -305,11 +310,12 @@ public class XrayOCSPIt {
 
                 ocspRcreq.encode(baos, true);
 
+                baos.close();
 
                 byte[] query = baos.getArray();
 
                 if (app.outputFileBase != null) {
-                    Files.write(Paths.get(app.outputFileBase + ".ors"), query);
+                    Files.write(Paths.get(app.outputFileBase + ".orq"), query);
                 }
 
 
@@ -329,7 +335,7 @@ public class XrayOCSPIt {
 
                 if (response.response != null) {
                     if (app.outputFileBase != null) {
-                        Files.write(Paths.get(app.outputFileBase + ".orq"), query);
+                        Files.write(Paths.get(app.outputFileBase + ".ors"), response.response);
                     }
                     ires.prop("OCSPResponse", new OCSPResProc(context).parse(response.response));
                 }

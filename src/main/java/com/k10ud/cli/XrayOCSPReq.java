@@ -33,8 +33,8 @@ import static picocli.CommandLine.*;
 public class XrayOCSPReq {
 
 
-    @Command(name = "xray-ocspq",
-            header = "xray-ocspq 0.0.1",
+    @Command(name = "xray-ocspq-query",
+            header = "xray-ocspq-query 0.0.1",
             showDefaultValues = true,
             description = "Dump RFC 6960 OCSP Request"
     )

@@ -45,7 +45,7 @@ public class XrayOCSP {
             System.out.println(dumper.toString(null,res));
         } catch (Exception x) {
             System.err.println(Exceptions.getSmartExceptionMessage(x));
-            usage(new XrayOCSPIt.Args(), System.err);
+          //  usage(new XrayOCSPIt.Args(), System.err);
             System.exit(-1);
         }
     }

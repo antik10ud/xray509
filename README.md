@@ -39,13 +39,6 @@ The following tools are currently provided but in progress:
 
 [How To](doc/how-to.md) do weird things with xray
 
-
-## Example
-
-This is a small demonstration of the xray-cert command so you can taste the tool:
-
-![Example](./doc/term.svg)
-
 ## Requirements
 Java >= 1.8
 
@@ -60,14 +53,6 @@ Java >= 1.8
    $ export PATH=target/appassembler/bin:$PATH	
 ```
 
-## Download
-You can download already compiled tools (java 1.8)
-
-* [xray-tools.zip](dist/xray-tools.zip)
-* [xray-tools.tar.gz](dist/xray-tools.tar.gz)
-  
-
-  
 ## Usage
 ```
    $ xray-cert --help
@@ -76,6 +61,8 @@ You can download already compiled tools (java 1.8)
 ## More Info
 
 * [Slides](doc/20191108-slides-imaginecode/pdf/presentation.pdf) de la charla de presentación de las herramientas en el [ImagineCode 2019](http://imaginecode.org/) 
+
+* [Artículo](https://espublicogestiona.com/el-registro-descentralizado-de-certificados-digitales-revocados/) El registro descentralizado de certificados digitales revocados. Una introducción práctica a la infraestructura web de clave pública y los contratos inteligentes con la excusa de mejorar la consulta del estado de revocación de un certificado digital.
   	
 ## License
 MIT License

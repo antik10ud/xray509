@@ -39,11 +39,10 @@
             <version>4.7.2</version>
         </dependency>
 
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -53,6 +52,21 @@
             <version>4.0</version>
             <scope>test</scope>
         </dependency>
+
+
+        <dependency>
+            <groupId>org.web3j</groupId>
+            <artifactId>core</artifactId>
+            <version>5.0.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-nop -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>1.7.30</version>
+        </dependency>
+
 
     </dependencies>
     <build>
@@ -123,12 +137,12 @@
                         </program>
                         <program>
                             <mainClass>com.k10ud.cli.XrayOCSPReq</mainClass>
-                            <name>xray-orq</name>
+                            <name>xray-ocsp-request</name>
                         </program>
 
                         <program>
                             <mainClass>com.k10ud.cli.XrayOCSPRes</mainClass>
-                            <name>xray-ors</name>
+                            <name>xray-ocsp-response</name>
                         </program>
 
                         <program>
@@ -140,6 +154,16 @@
                             <mainClass>com.k10ud.cli.XrayCRL</mainClass>
                             <name>xray-crl</name>
                         </program>
+
+                        <program>
+                            <mainClass>com.k10ud.cli.XrayDCRL</mainClass>
+                            <name>xray-dcrl</name>
+                        </program>
+                        <program>
+                            <mainClass>com.k10ud.cli.XrayDCRLRevoke</mainClass>
+                            <name>xray-dcrl-revoke</name>
+                        </program>
+
                     </programs>
                 </configuration>
                 <executions>
@@ -167,6 +191,24 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.web3j</groupId>
+                <artifactId>web3j-maven-plugin</artifactId>
+                <version>4.6.5</version>
+                <configuration>
+                    <packageName>com.k10ud.xray509.blockchain.model</packageName>
+                    <sourceDestination>src/main/java</sourceDestination>
+                    <nativeJavaType>true</nativeJavaType>
+                    <outputFormat>java,bin</outputFormat>
+                    <soliditySourceFiles>
+                        <directory>src/main/resources/sol</directory>
+                        <includes>
+                            <include>**/*.sol</include>
+                        </includes>
+                    </soliditySourceFiles>
+                </configuration>
             </plugin>
 
 

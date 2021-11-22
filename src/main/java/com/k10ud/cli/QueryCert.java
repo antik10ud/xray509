@@ -175,7 +175,20 @@ public class QueryCert {
         Map<String, KV> vars = new HashMap<>();
 
         public void add(String variable, KV kv) {
-            vars.put(variable, kv);
+            KV prev = vars.get(variable);
+            if (prev != null) {
+                Item list;
+                if (prev.getValue() instanceof Item) {
+                    list = (Item) prev.getValue();
+                } else {
+                    list = new Item();
+                    list.prop(ItemHelper.index(0), prev.getValue());
+                    vars.put(variable, new KV("list", list));
+                }
+                list.prop(ItemHelper.index(list.size()), kv.getValue());
+            } else {
+                vars.put(variable, kv);
+            }
         }
 
         public KV getVar(String variable) {
@@ -230,7 +243,7 @@ public class QueryCert {
             Object value = null;
             KV kv = null;
 
-            if (r.literal!=null) {
+            if (r.literal != null) {
                 output.add(new KV(fieldName(r, kv), r.literal));
 
             } else {
@@ -286,7 +299,23 @@ public class QueryCert {
                         value = "<NULL>";
                     }
                 }
-                output.add(new KV(fieldName(r, kv), applyFunction(source, r.function, kv, value)));
+                Object newValue = applyFunction(source, r.function, kv, value);
+                String key = fieldName(r, kv);
+                Object prevValue = output.getProp(key);
+                if (prevValue != null) {
+                    Item target;
+                    if (prevValue instanceof Item) {
+                        target = ((Item) prevValue);
+                    } else {
+                        target = new Item();
+                        target.prop(ItemHelper.index(0), prevValue);
+                        output.prop(key, target);
+                    }
+                    target.prop(ItemHelper.index(target.size()), newValue);
+
+                } else {
+                    output.add(new KV(key, newValue));
+                }
             }
         }
 
@@ -294,7 +323,7 @@ public class QueryCert {
     }
 
     private Object applyFunction(byte[] source, String function, KV kv, Object value) {
-        if (function!=null) {
+        if (function != null) {
             switch (function) {
                 case "source_encoded":
                     boolean ists = (kv.getKey() instanceof TaggedString);
@@ -327,7 +356,7 @@ public class QueryCert {
     }
 
     private String varAsFieldName(Return r) {
-        if (r.variable==null) {
+        if (r.variable == null) {
             return "";
         }
         return r.variable.substring(1) + (r.prop != null && !r.prop.startsWith("ξ") ? "_" + r.prop : "");
